@@ -188,7 +188,7 @@ The Vanilla way is a one-liner.
 
 ```javascript
 // inside class TodoApp
-appstate = { vfilter: 'SHOW_ALL', todos: [] }
+app_state = { vfilter: 'SHOW_ALL', todos: [] }
 ```
 
 <br/><br/><br/>
@@ -263,6 +263,11 @@ set_vfilter = vfil => appstate.vfilter = vfil
 
 You can see how rapidly this boilerplate scales.
 
+Notice that just to update a todo, they are now advocating that you involve data
+management solutions like `immutability-helper`, `updeep`, or `immutable.js`.
+Consider how quickly this will get out of control, if a simple data change means
+you need data management libraries for your data management layer.
+
 ### The Redux Way
 
 At three actions:
@@ -316,3 +321,93 @@ toggle_todo = i    => this.app_state.todos[i].completed = !this.app_state.todos[
 set_vfilter = vfil => appstate.vfilter = vfil
 ```
 
+<br/><br/><br/>
+## Composer reduction
+Now, at three actions for the entire app, the `Redux` tutorial talks about
+keeping things easier to comprehend, and starts advocating subdividing your
+central function for updates, just previously held up as the reason this was
+easy to understand.  They talk about `reducer composition` as a central behavior
+of a `Redux` app.
+
+Because if there's one thing you want in a data layer that's meant to keep
+things simple with no boilerplate in a pure function, it's a tutorial that
+starts showing complexity reduction strategies with three simple calls while
+discussing that managing its complexity is a core behavior of downstream apps,
+after referring to its impurity tactics as an advanced topic.
+
+![](./tommy lee jones.jpg)
+
+### The New Simpler Redux Way
+
+After three simplifications, they come up with this longer, more complex code.
+
+```javascript
+import { combineReducers } from 'redux'
+import { ADD_TODO, TOGGLE_TODO, SET_VISIBILITY_FILTER, VisibilityFilters } from './actions'
+const { SHOW_ALL } = VisibilityFilters
+
+function visibilityFilter(state = SHOW_ALL, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return action.filter
+    default:
+      return state
+  }
+}
+
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map((todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+const todoApp = combineReducers({
+  visibilityFilter,
+  todos
+})
+
+export default todoApp
+```
+
+### The Vanilla Way
+
+Those three one-liners we had before can stand, thanks.
+
+Here's our complete app that does the same thing, so far, rather than just the
+reducers piece.
+
+```javascript
+class TodoApp {
+
+    app_state   = { vfilter: 'SHOW_ALL', todos: [] }
+
+    add_todo    = todo => this.todos.push(todo)
+    toggle_todo = i    => this.app_state.todos[i].completed = !this.app_state.todos[i].completed
+    set_vfilter = vfil => appstate.vfilter = vfil
+
+    render()    { /* do nothing yet */ }
+    hooks()     { return {}; }
+
+}
+```
+
+<br/><br/><br/>
+##
