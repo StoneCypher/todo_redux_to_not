@@ -270,10 +270,12 @@ At three actions:
 ```javascript
 function todoApp(state = initialState, action) {
   switch (action.type) {
+
     case SET_VISIBILITY_FILTER:
       return Object.assign({}, state, {
         visibilityFilter: action.filter
       })
+
     case ADD_TODO:
       return Object.assign({}, state, {
         todos: [
@@ -284,6 +286,7 @@ function todoApp(state = initialState, action) {
           }
         ]
       })
+
     case TOGGLE_TODO:
       return Object.assign({}, state, {
         todos: state.todos.map((todo, index) => {
@@ -295,8 +298,10 @@ function todoApp(state = initialState, action) {
           return todo
         })
       })
+
     default:
       return state
+
   }
 }
 ```
@@ -307,6 +312,7 @@ It's just three simple member-setting one-liners
 
 ```javascript
 add_todo    = todo => this.todos.push(todo)
-toggle_todo = idx  => this.todos[i].completed = !this.todos[i].completed
+toggle_todo = i    => this.app_state.todos[i].completed = !this.app_state.todos[i].completed
 set_vfilter = vfil => appstate.vfilter = vfil
 ```
+
