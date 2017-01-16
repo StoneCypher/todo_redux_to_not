@@ -70,7 +70,7 @@ export const VisibilityFilters = {
 }
 ```
 
-### Vanilla way
+### The Vanilla way
 
 In vanilla, we choose to have hooks (hooks are just callbacks under a
 descriptive name which better indicates that their intent is to create a
@@ -115,7 +115,7 @@ export function setVisibilityFilter(filter) {
 }
 ```
 
-### Vanilla way
+### The Vanilla way
 
 ```javascript
 /* nothing is needed here */
@@ -127,6 +127,16 @@ export function setVisibilityFilter(filter) {
 The tutorial chooses the following data shape for the application.  To keep
 things easy to compare, we will use the same data shape in our vanilla app. I
 edited the text, though.
+
+I actually would do this differently in the vanilla app if we weren't trying to
+keep things simple to compare.  It's not particularly helpful to stuff all the
+state into a single object, unless you're trying to pretend that functional
+programming means routing the entire state through a handler for every single
+call.
+
+Note that the official tutorial nearly immediately gets into discouraging
+heirarchy.  Heirarchy is important, and this reflects one of the many weaknesses
+of pretending that your application state is always a key-value store.
 
 ```javascript
 {
@@ -143,6 +153,42 @@ edited the text, though.
     }
   ]
 }
+```
+
+<br/><br/><br/>
+## Initial state
+
+Next the `Redux` path creates an initial state, and shows how to integrate that
+with their reducer behavior step.
+
+We'll just make a class member.
+
+### The Redux way
+
+```javascript
+const initialState = {
+  visibilityFilter: VisibilityFilters.SHOW_ALL,
+  todos: []
+}
+
+function todoApp(state, action) {
+  if (typeof state === 'undefined') {
+    return initialState
+  }
+
+  // For now, don't handle any actions
+  // and just return the state given to us.
+  return state
+}
+```
+
+### The Vanilla way
+
+The Vanilla way is a one-liner.
+
+```javascript
+// inside class TodoApp
+appstate = { vfilter: 'SHOW_ALL', todos: [] }
 ```
 
 <br/><br/><br/>
@@ -165,3 +211,102 @@ called `state` (different, confusingly, from `Redux state`) on the controls
 where it need not exist, and seems to take the position that somehow without its
 imposition, you can't have pure functional `react`, when indeed it doesn't work
 under `react`'s pure functional controls.
+
+Note also that they immediately mention the need for involving side effects, but
+also say that it's difficult and belongs in the advanced tutorial.  This is two
+warnings at once: one, that they actually know this isn't a pure function at
+all, since they have a direct tutorial on how to involve side effects, which are
+the defining difference of pure functions; and two, that side effects, which are
+literally the entire purpose of a function that takes a state and returns a new
+state on application of a message, are difficult to interleave.  Sadly, this is
+most of what a web application does in code, since everything else is
+declarative.  Management structures which make common behaviors more difficult
+are nearly always a net lose.
+
+Note that they next switch into another long discussion of boilerplate, how
+some people don't like `switch`, how they want you to use something that some
+browsers don't implement, so you need a shim or a library, insist that code in
+front of your face isn't real boilerplate and invoke their reducing boilerplate
+document at the same time, et cetera.
+
+### The Redux Way
+
+We augment our reducer to add the ability to provide a new mutated state.
+
+```javascript
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    default:
+      return state
+  }
+}
+```
+
+That switch grows by a case for every single message.  Anything you build in
+another file needs to go through here.
+
+### The Vanilla way
+
+We just set the member variable.
+
+```javascript
+// inside class TodoApp
+set_vfilter = vfil => appstate.vfilter = vfil
+```
+
+<br/><br/><br/>
+## Two more actions
+
+You can see how rapidly this boilerplate scales.
+
+### The Redux Way
+
+At three actions:
+
+```javascript
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: [
+          ...state.todos,
+          {
+            text: action.text,
+            completed: false
+          }
+        ]
+      })
+    case TOGGLE_TODO:
+      return Object.assign({}, state, {
+        todos: state.todos.map((todo, index) => {
+          if (index === action.index) {
+            return Object.assign({}, todo, {
+              completed: !todo.completed
+            })
+          }
+          return todo
+        })
+      })
+    default:
+      return state
+  }
+}
+```
+
+### The Vanilla way
+
+It's just three simple member-setting one-liners
+
+```javascript
+add_todo    = todo => this.todos.push(todo)
+toggle_todo = idx  => this.todos[i].completed = !this.todos[i].completed
+set_vfilter = vfil => appstate.vfilter = vfil
+```
