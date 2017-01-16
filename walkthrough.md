@@ -12,6 +12,7 @@ in parallel with a vanilla implementation.
 
 
 
+<br/><br/><br/>
 ## Getting started
 
 So what we'll do is go through their tutorial's steps, quickly, in both
@@ -45,6 +46,7 @@ class TodoApp {
 
 
 
+<br/><br/><br/>
 ## Actions
 
 In `Redux`, you have `Actions`, which represent messages sent to the `Store` to
@@ -83,6 +85,7 @@ toggle_todo = todo => true // don't know what this does yet
 set_vfilter = vfil => true // don't know what this does yet
 ```
 
+<br/><br/><br/>
 ## Action creators
 
 In redux, every action comes with a factory function to make examples, called an
@@ -118,6 +121,7 @@ export function setVisibilityFilter(filter) {
 /* nothing is needed here */
 ```
 
+<br/><br/><br/>
 ## Data state
 
 The tutorial chooses the following data shape for the application.  To keep
@@ -141,6 +145,7 @@ edited the text, though.
 }
 ```
 
+<br/><br/><br/>
 ## Reducers
 
 A concept taken incorrectly from `clojure`, reducers are the way that messages
