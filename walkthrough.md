@@ -118,6 +118,29 @@ export function setVisibilityFilter(filter) {
 /* nothing is needed here */
 ```
 
+## Data state
+
+The tutorial chooses the following data shape for the application.  To keep
+things easy to compare, we will use the same data shape in our vanilla app. I
+edited the text, though.
+
+```javascript
+{
+  visibilityFilter: 'SHOW_ALL',
+
+  todos: [
+    {
+      text: 'Consider *not* using Redux',
+      completed: true,
+    },
+    {
+      text: 'You don\'t need libraries to use a tree for state; it\'s just a JS object',
+      completed: false
+    }
+  ]
+}
+```
+
 ## Reducers
 
 A concept taken incorrectly from `clojure`, reducers are the way that messages
@@ -127,4 +150,13 @@ distinct derived state.
 
 In some ways this is appealing.  However, you don't need redux for this in any
 way.  We'll re-implement the vanilla app as reducers at the end, but for now
-we're showing the no-nonsense approach, so, let's just be direct.
+we're showing the no-nonsense approach, so, let's just be direct, the first
+time; we can go for the fancy way later.
+
+It's worth noting that while they talk a good game about this turning the
+application into a no-state calculation, that isn't actually true; this sets up
+extensive bindings throughout the application, imposes the `react` facility
+called `state` (different, confusingly, from `Redux state`) on the controls
+where it need not exist, and seems to take the position that somehow without its
+imposition, you can't have pure functional `react`, when indeed it doesn't work
+under `react`'s pure functional controls.
