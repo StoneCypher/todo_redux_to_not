@@ -410,7 +410,7 @@ In `Flux`es, the deal is that there are floating state objects called `store`s,
 which contain your application's current state, bound to individual controls by
 a messaging system and coupling.
 
-## The Redux Way
+### The Redux Way
 
 One of the big improvements of `Redux` is that it only has one `store`.  That
 reduces the complexity of knowing which `store` you're bound to, and so on.
@@ -448,6 +448,7 @@ None of this needs to exist.
 /* nothing needs to be done here */
 ```
 
+<br/><br/><br/>
 ## Testing Action Dispatch
 
 Admirably, the Flux tutorial stops here, and works with the existing data store from the console, to give people an intuitive sense of how it works, instead of charging ahead to make a user interface.
@@ -508,4 +509,68 @@ You'll note that the state, in the inspector, looks exactly the same.  Using Chr
 
 Note that the time machine behavior is not declinable, and if not manually managed, is better known as a "severe memory leak."  😂
 
-##
+<br/><br/><br/>
+## Misunderstanding unidirectional
+
+One of the most unfortunate things about the `Flux` community is insisting on misunderstanding unidirectional dataflow.
+
+In React, unidirectional dataflow means "data that only flows downwards from a single flat-data origin point at root."
+
+In Flux, unidirectional dataflow somehow means "data that flows down from many points as bound to a store, then back upwards in a loop."
+
+It's a fine alternate approach, but it makes it nearly impossible for `React` developers to explain one of `React`'s biggest advantages, because their chosen label has been co-opted for nearly the opposite: "unidirectional" meaning "data goes both ways, up and down, in a collection of loops."
+
+The `Redux` tutorial proceeds to teach this idea.
+
+The Vanilla app has `React`'s usage of this term instead.  I'll rephrase it as "top down no-cycle flat data rendering."  The advantage is that the controls never need state, and the controls never need knowledge of the providing application.  This second point has ***huge*** implications for easy, convenient testing: no need for mocks, spies, or injection; just provide test handlers as pure functions, and you're done.
+
+### The Redux Way
+
+A two printed page tutorial on what's actually happening when you update applicaton state, involving reinforcing the new concepts of `store`s, `dispatcher`s, `action`s, `action creator`s, `reducer function`s, computing the `next state`, `root reducer`s, the possibility of `combined reduction`s, making `single state tree`s, and what the `Redux Store` is doing with the `complete state tree`.
+
+Also below the "next steps" link, there's a note for advanced users to check out `async flow` in the advanced tutorial, to learn how `middleware` transforms `async action`s before they reach the `reducer`s.
+
+### The Vanilla Way
+
+Setting a member variable in pure Javascript, with no new concepts, and moving on with life.
+
+<br/><br/><br/>
+## Connecting to a React App
+Let's get our data connected to a `React` renderer.
+
+### The Redux Way
+
+Now you're expected to install *an entire extra package* to set up "React Redux Bindings."  Note that the entire purpose of React originally was to get away from bindings, as they don't scale conceptually or in browser performance, according to the original React team.
+
+Next we're introduced to a Redux concept called "presentational components" and "container components."  The entire purpose of this new divide is to accomodate that Redux forces you to use the `React` facility called `state` (which is confusingly different than `Redux State`,) and a tacit admission that state in controls is `Very Bad`&trade; and should be kept to an absolute minimum.
+
+We're exhorted to use "presentational component"s as much as possible.
+
+Of course, the actual absolute minimum is zero, which the Vanilla approach achieves, which `Redux` cannot.  But, let's proceed.
+
+```
+npm install --save react-redux
+```
+
+Note that `container components` in their tutorial also require awareness of `Redux`.  This means that things made as container components in `Redux` will not be available without `Redux` - not only are you locked out of other `Flux`es like `Omniscient`, `Marty`, `Material Flux`, `Flux This`, and `Fluxible`, but also more exotic data managers like `GraphQL`, `Relay`, `Cortex`, `w3c web component`s, or pure Vanilla controls.
+
+On the other hand, pure vanilla controls are just functions, and can be used by literally any other implementation.  It's a one-way requirement street, and a form of extreme lock-in.
+
+Here's their comparison table, with Vanilla added:
+
+|                | Vanilla components          | Presentational Components        | Container Components                           |
+| -------------: | :-------------------------- | :------------------------------- | :--------------------------------------------- |
+| Purpose        | Anything                    | How things look (markup, styles) | How things work (data fetching, state updates) |
+| Aware of Redux | No                          | No                               | Yes                                            |
+| To read data   | Read data from props        | Read data from props             | Subscribe to Redux state                       |
+| To change data | Invoke callbacks from props | Invoke callbacks from props      | Dispatch Redux actions                         |
+| Are written    | By hand                     | By hand                          | Usually generated by React Redux               |
+
+Notice anything?
+
+The "presentational components" are pretty close to just normal Vanilla `React` components.  And we're supposed to use them as much as we can.
+
+The difference with `Redux` controls is we're to make them `Redux` aware, add a bunch of boilerplate, handle pub/sub, handle dispatch, and get our stuff generated by some tool for us.
+
+And we're supposed to do that as little as possible.  (As little as possible is zero.  In `Redux` terminology, a Vanilla `React` app is just pure "presentational component"s.)
+
