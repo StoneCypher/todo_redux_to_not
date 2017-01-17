@@ -980,15 +980,29 @@ We fill out our `render` method from earlier.  We also add a parameter to the `c
 This is where those top-level `props` that we keep passing down as `{...props}` actually originate: the `props` of the root control, as applied when `render`ed by `React`.  The default, standard way. 🙏
 
 ```javascript
-render = () =>
+render() {
 
     ReactDOM.render(
-        <App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos}/>,
+        <App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
         this.dom_target
     );
+
+}
 ```
 
-This method call is probably the most complex part of the Vanilla app.  (It is not complex.)
+We'll also decorate the methods that change state with a `.render` call, as well as the `constructor`.
+
+```javascript
+constructor()     { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.render(); }
+
+add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo});                this.render(); }
+toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
+set_vfilter(vfil) { this.app_state.vfilter = vfil;                                          this.render(); }
+```
+
+This means that the app now re-renders itself when its internal state changes.  Nice and tidy.  😊
+
+This setup probably the most complex part of the Vanilla app.  (It is not complex.)
 
 <br/>
 ## First container component's boilerplate: `VisibleTodoList`
