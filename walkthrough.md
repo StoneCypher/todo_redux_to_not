@@ -734,7 +734,7 @@ In Vanilla, we would write
 
 ```javascript
 import React from 'react';
-import Todo  from './Todo.js';
+import Todo  from 'Todo';
 
 const TodoList = ({todos, onTodoClick}) => (
   <ul>
@@ -791,6 +791,57 @@ Vanilla does not want this control at all.  It serves only to express a convenie
 
 ```javascript
 /* this space intentionally left blank */
+```
+
+<br/>
+### `Footer`
+`Footer` represents (shocker!) the application's footer bar.
+
+#### `Footer` the Redux Way
+Their implementation of `Footer` relies on a control called `FilterLink` that they implement later.
+
+```javascript
+import React from 'react';
+import FilterLink from '../containers/FilterLink';
+
+const Footer = () => (
+  <p>
+    Show:
+    {" "}
+    <FilterLink filter="SHOW_ALL">
+      All
+    </FilterLink>
+    {", "}
+    <FilterLink filter="SHOW_ACTIVE">
+      Active
+    </FilterLink>
+    {", "}
+    <FilterLink filter="SHOW_COMPLETED">
+      Completed
+    </FilterLink>
+  </p>
+);
+
+export default Footer;
+```
+
+#### `Footer` the Vanilla Way
+We don't need `FilterLink` in Vanilla because it's an expression of `Redux` binding, so we'll just skip using it in our own code.
+
+We could choose to write this differently, as a result:
+
+```javascript
+import React      from 'react';
+
+const ShowLink      = (myHook, myText) => <a className="clickable" onClick={myHook}>myText</FilterLink>,
+
+      ShowAll       = ShowLink(hooks.set_vfilter('SHOW_ALL')},       'All'),
+      ShowActive    = ShowLink(hooks.set_vfilter('SHOW_ACTIVE')},    'Active'),
+      ShowCompleted = ShowLink(hooks.set_vfilter('SHOW_COMPLETED')}, 'Completed'),
+
+      Footer        = (hooks) => <p>Show: {<ShowAll/>}, {<ShowActive/>}, {<ShowCompleted/>}</p>;
+
+export { Footer };
 ```
 
 <br/><br/><br/>
