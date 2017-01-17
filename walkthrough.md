@@ -574,3 +574,16 @@ The difference with `Redux` controls is we're to make them `Redux` aware, add a 
 
 And we're supposed to do that as little as possible.  (As little as possible is zero.  In `Redux` terminology, a Vanilla `React` app is just pure "presentational component"s.)
 
+All we need to do is accept that the `Redux` bindings aren't actually necessary, and we can follow their advice and go pure "presentational," and drop three libraries, 14 concepts, ~40-50% of code, and huge CPU overhead, in the process.  😉
+
+<br/><br/><br/>
+## Designing components
+Now we get into the divide of "presentational" and "container" components as a design issue.  In the Vanilla approach, there are only "presentational" controls, and this entire design step and planning step is eliminated.  Less non-product thinking, and fewer opportunities for mistakes.
+
+The `Redux` tutorial even tips its hat that these decisions can be hard to make, even in tiny things like toy Todo apps such as this one.
+
+> Sometimes it's hard to tell if some component should be a presentational component or a container. For example, sometimes form and function are really coupled together, such as in case of this tiny component:
+>
+> * AddTodo is an input field with an “Add” button
+>
+> Technically we could split it into two components but it might be too early at this stage. It's fine to mix presentation and logic in a component that is very small. As it grows, it will be more obvious how to split it, so we'll leave it mixed.
