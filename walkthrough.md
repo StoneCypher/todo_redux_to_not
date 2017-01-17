@@ -628,3 +628,45 @@ We can run with their controls for now.  I'd actually like a different, simpler 
 
 Note that we will use the same control structure, ***but they will all be "presentational control"s***.
 
+## Actual presentational controls
+
+So, we can use their presentational controls.  I would write them differently, and will at the end of the tutorial, but, for the sake of the comparison, it's nice to keep the differences in the non-`Redux` part to a minimum.
+
+```javascript
+import React, { PropTypes } from 'react';
+
+const Todo = ({ onClick, completed, text }) => (
+  <li
+    onClick={onClick}
+    style={{
+      textDecoration: completed ? 'line-through' : 'none'
+    }}
+  >
+    {text}
+  </li>
+);
+
+Todo.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  completed: PropTypes.bool.isRequired,
+  text: PropTypes.string.isRequired
+};
+
+export default Todo
+```
+
+But to make the point, this could just as easily be
+
+```javascript
+import React, { PropTypes } from 'react';
+
+const Todo = ({ onClick, completed, text }) => (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
+
+Todo.propTypes = {
+  onClick   : PropTypes.func.isRequired,
+  completed : PropTypes.bool.isRequired,
+  text      : PropTypes.string.isRequired
+};
+
+export { Todo };
+```
