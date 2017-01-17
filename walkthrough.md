@@ -1224,7 +1224,19 @@ Whereas most of the conceptual overhead is linear overhead (that is, the same am
 
 And then they tell you to use *middlewares* in the advanced tutorial, meaning state change reasoning becomes hyper-exponential 😱 😭 😂 😅 😰
 
+Weirdly, while mutating state through their entire tutorial, they also advise the use of `immutable.js`, when simply not doing this means everything is default-immutable on its own.
+
+Of particular note is that using these external stores means that every test you want to do for your controls that either are or contain `container control`s must now be in an E2E browser setup (as opposed to fast-running pure testers,) block an entire browser thread to run (instead of mass parallel,) and the test itself must set up and tear down `redux state`s for each test, as opposed to just passing a piece of plain data in and string testing the result.  ***This makes the workload of testing brain-wallopingly higher***.
+
+Please note that these two apps are both complete, and both do approximately the same thing.
+
 ### The Vanilla Way
+
+```html
+```
+
+```javascript
+```
 
 ### The Redux Way
 
