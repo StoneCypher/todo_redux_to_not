@@ -592,6 +592,10 @@ If decisions are difficult at this scale, imagine how difficult they can be in l
 
 ### The Redux Way
 
+So, `Redux` wants to do "presentational" controls first.
+
+### The Redux Presentational Way
+
   * `TodoList` is a list showing visible todos.
     * `todos`: Array is an array of todo items with { id, text, completed } shape.
     * `onTodoClick(id: number)` is a callback to invoke when a todo is clicked.
@@ -608,12 +612,19 @@ Notice that `Redux` is even paying lip service to that some of its controls are 
 
 > If you migrate from Redux to something else, you'll be able to keep all these components exactly the same. They have no dependency on Redux.
 
-This is a ***🚩severe red flag🚩***.
+This is a ***🚩severe red flag🚩***.  Components are not locked to data layers in most of the non-Fluxes.
 
-Designing Container Components
+#### The Redux Container Way
 
-We will also need some container components to connect the presentational components to Redux. For example, the presentational TodoList component needs a container like VisibleTodoList that subscribes to the Redux store and knows how to apply the current visibility filter. To change the visibility filter, we will provide a FilterLink container component that renders a Link that dispatches an appropriate action on click:
+Now we define the rest of it.  They've done a pretty good job of containing the library infiltration, though of course, it could be total (which would eliminate the need for `Redux`, so, they won't.)
 
-VisibleTodoList filters the todos according to the current visibility filter and renders a TodoList.
-FilterLink gets the current visibility filter and renders a Link.
-filter: string is the visibility filter it represents.
+  * `VisibleTodoList` filters the todos according to the current visibility filter and renders a `TodoList`.
+  * `FilterLink` gets the current visibility filter and renders a `Link`.
+    * `filter`: string is the visibility filter it represents.
+
+### The Vanilla Way
+
+We can run with their controls for now.  I'd actually like a different, simpler structure, but for the sake of the comparison it's nice to keep it this way.  (I can make the other structure after the fact, too.  😀)
+
+Note that we will use the same control structure, ***but they will all be "presentational control"s***.
+
