@@ -1,6 +1,6 @@
 class TodoApp {
 
-    constructor()     { this.app_state = { vfilter: 'SHOW_ALL', todos: [] };                    this.render(); }
+    constructor(tgt)  { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt;    this.render(); }
     current_state()   { return this.app_state; }
 
     add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo});                this.render(); }

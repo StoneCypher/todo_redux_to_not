@@ -993,7 +993,7 @@ render() {
 We'll also decorate the methods that change state with a `.render` call, as well as the `constructor`.
 
 ```javascript
-constructor()     { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.render(); }
+constructor(tgt)  { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt;    this.render(); }
 
 add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo});                this.render(); }
 toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
