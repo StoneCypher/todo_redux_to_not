@@ -681,7 +681,7 @@ This could just as easily be
 import React, { PropTypes } from 'react';
 
 const Todo = ({ onClick, completed, text }) =>
-  (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
+  (<li onClick={onClick} className={`todo ${completed? 'complete':null}`}>{text}</li>);
 
 Todo.propTypes = {
   onClick   : PropTypes.func.isRequired,
@@ -698,9 +698,15 @@ Or honestly, with a control this simple, you could simply drop proptypes, whose 
 import React from 'react';
 
 const Todo = ({ onClick, completed, text }) =>
-  (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
+  (<li onClick={onClick} className={`todo ${completed? 'complete':null}`}>{text}</li>);
 
 export { Todo };
+```
+
+This also moves the styling issue to `CSS` where it belongs, allowing responsive and blah blah blah.  So we'll support that with
+
+```css
+.todo.completed { text-decoration: line-through; }
 ```
 
 <br/>
@@ -745,7 +751,7 @@ In Vanilla, we would write
 import React from 'react';
 import Todo  from 'Todo';
 
-const TodoList = ({todos, onTodoClick}) => (
+const TodoList = ({hooks, todos, onTodoClick}) => (
   <ul>
     {todos.map(todo => <Todo key={todo.id} {...todo} onClick={() => hooks.onTodoClick(todo.id)}/>)}
   </ul>
@@ -920,11 +926,13 @@ const App = (props) => (
 export { App };  // honestly I'd like a more descriptive control name
 ```
 
-Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.)
+Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (*Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.*)
 
 Either way, having the data come down from the outside and go through the flows in a concretely followable path makes it much easier to figure out where the data comes from, where it's going, and to debug the whole process.  Also, since it's now a piece of vanilla JS, just a flat datastructure that you preferably won't be changing, you generally know that the problem isn't coming from your controls.
 
-Which, incidentally, since it always comes from the outside, nets you `immutability` for free.  No need for `immutable.js` or its learning/implementation overhead.  😁
+Which, incidentally, since it always comes from the outside, nets you `immutability` for free.  No need for `immutable.js` (or whatever) or its learning/implementation overhead.  😁
+
+
 
 <br/><br/><br/>
 %% COMEBACK
@@ -963,8 +971,14 @@ const mapStateToProps = (state) => {
 ```
 
 ### The Vanilla Way
-Somewhat shorter.  We fill out our `render` method from earlier.  We also add a parameter to the `constructor`, telling the `App` to where to render in the DOM.  %% COMEBACK
+Somewhat shorter.  It's another one-liner 😁
+
+We fill out our `render` method from earlier.  We also add a parameter to the `constructor`, telling the `App` to where to render in the DOM.
+
+This is where those top-level `props` that we keep passing down as `{...props}` actually originate: the `props` of the root control, as applied when `render`ed by `React`.  The default, standard way. 🙏
 
 ```javascript
-render = () => { ReactDOM.render(<App hooks={}/>, this.dom_target); }
+render = () => { ReactDOM.render(<App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos}/>, this.dom_target); }
 ```
+
+This method call is probably the most complex part of the Vanilla app.
