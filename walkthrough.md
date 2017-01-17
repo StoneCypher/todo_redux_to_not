@@ -660,7 +660,8 @@ But to make the point, this could just as easily be
 ```javascript
 import React, { PropTypes } from 'react';
 
-const Todo = ({ onClick, completed, text }) => (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
+const Todo = ({ onClick, completed, text }) =>
+  (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
 
 Todo.propTypes = {
   onClick   : PropTypes.func.isRequired,
