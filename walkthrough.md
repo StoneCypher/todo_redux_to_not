@@ -608,7 +608,7 @@ Notice that `Redux` is even paying lip service to that some of its controls are 
 
 > If you migrate from Redux to something else, you'll be able to keep all these components exactly the same. They have no dependency on Redux.
 
-This is a ***<span style="color:#800">red flag</span>***.
+This is a ***🚩severe red flag🚩***.
 
 Designing Container Components
 
