@@ -1,12 +1,11 @@
 class TodoApp {
 
-    constructor() {
-        this.todos = [];
-    }
+    constructor()     { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; }
+    current_state()   { return this.app_state; }
 
-    add_todo(todo)    { this.todos.push(todo); }
-    toggle_todo(todo) { return true; } // don't know what this does yet
-    set_vfilter(vfil) { return true; } // don't know what this does yet
+    add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo}); }
+    toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; }
+    set_vfilter(vfil) { this.app_state.vfilter = vfil; }
 
     render()          { /* do nothing yet */ }
     hooks()           { return {}; }

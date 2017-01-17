@@ -26,7 +26,7 @@ In `Redux`, you start from an empty page.
 /* empty */
 ```
 
-### The Vanilla way
+### The Vanilla Way
 
 In `vanilla`, we will choose to start with a class `TodoApp`, which has two
 methods: one that triggers a visual re-render, and one that provides the list
@@ -42,6 +42,8 @@ class TodoApp {
     render = () => { /* do nothing yet */ }
     hooks  = () => { return {}; }
 }
+
+export { TodoApp };
 ```
 
 
@@ -67,10 +69,10 @@ export const VisibilityFilters = {
   SHOW_ALL       : 'SHOW_ALL',
   SHOW_COMPLETED : 'SHOW_COMPLETED',
   SHOW_ACTIVE    : 'SHOW_ACTIVE'
-}
+};
 ```
 
-### The Vanilla way
+### The Vanilla Way
 
 In vanilla, we choose to have hooks (hooks are just callbacks under a
 descriptive name which better indicates that their intent is to create a
@@ -80,9 +82,9 @@ So, we'll instead offer
 
 ```javascript
 // inside class TodoApp
-add_todo    = todo => this.todos.push(todo)
-toggle_todo = todo => true // don't know what this does yet
-set_vfilter = vfil => true // don't know what this does yet
+add_todo(todo)    { /* not yet implemented */ }
+toggle_todo(i)    { /* not yet implemented */ }
+set_vfilter(vfil) { /* not yet implemented */ }
 ```
 
 <br/><br/><br/>
@@ -115,7 +117,7 @@ export function setVisibilityFilter(filter) {
 }
 ```
 
-### The Vanilla way
+### The Vanilla Way
 
 ```javascript
 /* nothing is needed here */
@@ -182,13 +184,20 @@ function todoApp(state, action) {
 }
 ```
 
-### The Vanilla way
+### The Vanilla Way
 
-The Vanilla way is a one-liner.
+The Vanilla way is a one-liner in the constructor.
 
 ```javascript
 // inside class TodoApp
-app_state = { vfilter: 'SHOW_ALL', todos: [] }
+constructor() { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; }
+```
+
+We'll also add a convenience one-liner to check the current state.
+
+```javascript
+// inside class TodoApp
+current_state() { return this.app_state; }
 ```
 
 <br/><br/><br/>
@@ -249,7 +258,7 @@ function todoApp(state = initialState, action) {
 That switch grows by a case for every single message.  Anything you build in
 another file needs to go through here.
 
-### The Vanilla way
+### The Vanilla Way
 
 We just set the member variable.
 
@@ -311,14 +320,14 @@ function todoApp(state = initialState, action) {
 }
 ```
 
-### The Vanilla way
+### The Vanilla Way
 
-It's just three simple member-setting one-liners
+It's just three simple member-setting one-liners (filling out the empties from earlier)
 
 ```javascript
-add_todo    = todo => this.todos.push(todo)
-toggle_todo = i    => this.app_state.todos[i].completed = !this.app_state.todos[i].completed
-set_vfilter = vfil => appstate.vfilter = vfil
+add_todo(todo)    { this.app_state.todos.push(todo); }
+toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; }
+set_vfilter(vfil) { this.app_state.vfilter = vfil; }
 ```
 
 <br/><br/><br/>
@@ -391,22 +400,8 @@ export default todoApp
 
 Those three one-liners we had before can stand, thanks.
 
-Here's our complete app that does the same thing, so far, rather than just the
-reducers piece.  Which one would you rather maintain, extend, or debug, so far?
-
 ```javascript
-class TodoApp {
-
-    app_state   = { vfilter: 'SHOW_ALL', todos: [] }
-
-    add_todo    = todo => this.todos.push(todo)
-    toggle_todo = i    => this.app_state.todos[i].completed = !this.app_state.todos[i].completed
-    set_vfilter = vfil => appstate.vfilter = vfil
-
-    render()    { /* do nothing yet */ }
-    hooks()     { return {}; }
-
-}
+/* no changes */
 ```
 
 <br/><br/><br/>
@@ -439,10 +434,10 @@ think it stops here, folks.  (Note also that binding that to the window is a
 significant security error.)
 
 ```javascript
-import { createStore } from 'redux'
-import todoApp from './reducers'
+import { createStore } from 'redux';
+import todoApp         from './reducers';
 
-let store = createStore(todoApp, window.STATE_FROM_SERVER)
+let store = createStore(todoApp, window.STATE_FROM_SERVER);
 ```
 
 ### The Vanilla Way
@@ -452,3 +447,65 @@ None of this needs to exist.
 ```javascript
 /* nothing needs to be done here */
 ```
+
+## Testing Action Dispatch
+
+Admirably, the Flux tutorial stops here, and works with the existing data store from the console, to give people an intuitive sense of how it works, instead of charging ahead to make a user interface.
+
+### The Redux Way
+
+Here's how they work with their current setup:
+
+```javascript
+import { addTodo, toggleTodo, setVisibilityFilter, VisibilityFilters } from './actions';
+
+// Log the initial state
+console.log( store.getState() );
+
+// Every time the state changes, log it
+// Note that subscribe() returns a function for unregistering the listener
+let unsubscribe = store.subscribe( () =>
+  console.log( store.getState() );
+)
+
+// Dispatch some actions
+store.dispatch( addTodo('Learn about actions') );
+store.dispatch( addTodo('Learn about reducers') );
+store.dispatch( addTodo('Learn about store') );
+store.dispatch( toggleTodo(0) );
+store.dispatch( toggleTodo(1) );
+store.dispatch( setVisibilityFilter(VisibilityFilters.SHOW_COMPLETED) );
+
+// Stop listening to state updates
+unsubscribe();
+```
+
+### The Vanilla Way
+
+Here's the same thing in our Vanilla setup.
+
+Note that our Vanilla setup has a significant advantage at this point: you can run two of them in parallel without any extra work to have them know about one another.  At this time, the `Redux` setup is a singleton, whether you like it or not.  😲
+
+It's also revealing simpler usage code, with no new concepts to learn:
+
+```javascript
+import { TodoApp } from './vanilla/todoapp.js';
+const App = new TodoApp();
+
+App.add_todo('Learn about no actions!');
+App.add_todo('Learn about skipping reducers!');
+App.add_todo('Learn about no stores :D');
+
+App.toggle_todo(0);
+App.toggle_todo(1);
+
+App.set_vfilter('SHOW_COMPLETED');
+```
+
+You'll note that the state, in the inspector, looks exactly the same.  Using Chrome as an example, since it varies by browser:
+
+![](./inspector_screen.png)
+
+Note that the time machine behavior is not declinable, and if not manually managed, is better known as a "severe memory leak."  😂
+
+##
