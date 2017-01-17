@@ -706,7 +706,7 @@ export { Todo };
 This also moves the styling issue to `CSS` where it belongs, allowing responsive and blah blah blah.  So we'll support that with
 
 ```css
-.todo.completed { text-decoration: line-through; }
+.todo.complete { text-decoration: line-through; }
 ```
 
 <br/>
@@ -850,11 +850,11 @@ We could choose to write this differently, as a result:
 ```javascript
 import React      from 'react';
 
-const ShowLink      = (myHook, myText) => <a className="clickable" onClick={myHook}>myText</FilterLink>,
+const ShowLink      = (myHook, myText) => <a className="clickable" onClick={myHook}>myText</a>,
 
-      ShowAll       = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ALL')},       'All'),
-      ShowActive    = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ACTIVE')},    'Active'),
-      ShowCompleted = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_COMPLETED')}, 'Completed'),
+      ShowAll       = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ALL'),       'All'),
+      ShowActive    = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'),
+      ShowCompleted = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed'),
 
       Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
 
@@ -915,7 +915,7 @@ import Footer          from 'Footer';
 import AddTodo         from 'AddTodo';
 import VisibleTodoList from 'VisibleTodoList';
 
-const App = (props) => (
+const AppRoot = (props) => (
   <div>
     <AddTodo  {...props} />
     <TodoList {...props} />
@@ -923,10 +923,10 @@ const App = (props) => (
   </div>
 )
 
-export { App };  // honestly I'd like a more descriptive control name
+export { AppRoot };
 ```
 
-Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (*Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.*)
+Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (*Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.  And I changed the name of `App` to `AppRoot`, to make it clearer what that was.*)
 
 Unrelated, we're going to use `TodoList` directly, because `VisibleTodoList` is just a set of `Redux` bindings, which we don't need, as a result.
 
@@ -1010,7 +1010,7 @@ This setup probably the most complex part of the Vanilla app.  (It is not comple
 `Redux` wants a control to govern the data going into the other control from the store, which is bound and `connect`ed to the `Redux` store.
 
 ### The Redux Way
-So, the `Redux` system uses a control called `VisibleTodoList` to implement a `Redux` filter over `TodoList`, to remove the things that should not fix the `Redux` filter, giving a layer of data indirection and hidden magic.  Because this determines whether the nodes exist *at all*, you can no longer use CSS animations to handle visual transitions, and you'll get a fair amount of DOM thrash and render thrash any time a very large list is rendered, quickly leading to yet another layer of indirection when someone needs to implement a windowing function.
+So, the `Redux` system uses a control called `VisibleTodoList` to implement a `Redux` filter over `TodoList`, to remove the things that should not fix the `Redux` filter, giving a layer of data indirection and hidden magic.
 
 ```javascript
 import { connect } from 'react-redux'
@@ -1064,14 +1064,14 @@ const Todo = (props) =>
     : null
   );
 
-const isVisible(props) => {
+const isVisible = (props) => {
   switch (props.vfilter) {
     case 'SHOW_ALL'       : return true;
     case 'SHOW_COMPLETED' : return props.todos[props.key].completed;
     case 'SHOW_ACTIVE'    : return !props.todos[props.key].completed;
     default               : throw 'no such visibility';
   }
-}
+};
 ```
 
 
@@ -1171,13 +1171,15 @@ Pretty much just standard JS, and a call to the hook.
 ```javascript
 import React from 'react';
 
-const AddTodo = (props) =>
-  (
-    <div>
-      <input id="add_todo"/>
-      <input type="button" onClick={() => props.hooks.add_todo(document.getElementById('add_todo').value)}/>
-    </div>
-  );
+const AddTodo = (props) => {
+        const adder = () => props.hooks.add_todo(document.getElementById('add_todo').value);
+        return (
+          <div>
+            <input id="add_todo" onBlur={adder}/>
+            <input value="Add todo" type="button" onClick={adder}/>
+          </div>
+        );
+      }
 ```
 
 <br/><br/><br/>
