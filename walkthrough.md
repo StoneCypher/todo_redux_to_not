@@ -624,13 +624,22 @@ Now we define the rest of it.  They've done a pretty good job of containing the 
 
 ### The Vanilla Way
 
-We can run with their controls for now.  I'd actually like a different, simpler structure, but for the sake of the comparison it's nice to keep it this way.  (I can make the other structure after the fact, too.  😀)
+We can run with near relatives of their controls for now.  I'd actually like a different, simpler structure, but for the sake of the comparison it's nice to keep it this way.  (I can make the other structure after the fact, too.  😀)
 
 Note that we will use the same control structure, ***but they will all be "presentational control"s***.
 
+<br/><br/><br/>
 ## Actual presentational controls
 
-So, we can use their presentational controls.  I would write them differently, and will at the end of the tutorial, but, for the sake of the comparison, it's nice to keep the differences in the non-`Redux` part to a minimum.
+So, we can use their presentational controls in a fairly similar way.  I will slightly rewrite them to support passing data down, and reduce their size a bit in the process.
+
+There are some very strange splittings of responsibilities in this code, some of which justify a `Store` existing; they lead to more complex controls than are necessary. We will eliminate some of these splits in the process, but not all of them up front, because it would lead to difficult to compare code, once some of the structural noise was removed; we'll do that at the end, instead.
+
+<br/>
+### `Todo`
+Let's do the controls one by one, like their tutorial does.  `Todo` is a control representing a single to-do item.
+
+#### `Todo` the Redux Way
 
 ```javascript
 import React, { PropTypes } from 'react';
@@ -655,7 +664,9 @@ Todo.propTypes = {
 export default Todo
 ```
 
-But to make the point, this could just as easily be
+#### `Todo` the Vanilla Way
+
+This could just as easily be
 
 ```javascript
 import React, { PropTypes } from 'react';
@@ -670,4 +681,109 @@ Todo.propTypes = {
 };
 
 export { Todo };
+```
+
+Or honestly, with a control this simple, you could simply drop proptypes, whose value is mostly in vetting the complex data going into larger widgets, and instead write
+
+```javascript
+import React from 'react';
+
+const Todo = ({ onClick, completed, text }) =>
+  (<li onClick={onClick} className={completed? 'complete':null}>{text}</li>);
+
+export { Todo };
+```
+
+<br/>
+### `TodoList`
+This represents a list of `Todo` items.
+
+#### `TodoList` the Redux Way
+Also a fairly straightforward presentational control.
+
+```javascript
+import React, { PropTypes } from 'react';
+import Todo from './Todo';
+
+const TodoList = ({ todos, onTodoClick }) => (
+  <ul>
+    {todos.map(todo =>
+      <Todo
+        key={todo.id}
+        {...todo}
+        onClick={() => onTodoClick(todo.id)}
+      />
+    )}
+  </ul>
+);
+
+TodoList.propTypes = {
+  todos: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    completed: PropTypes.bool.isRequired,
+    text: PropTypes.string.isRequired
+  }).isRequired).isRequired,
+  onTodoClick: PropTypes.func.isRequired
+};
+
+export default TodoList;
+```
+
+#### `TodoList` the Vanilla Way
+In Vanilla, we would write
+
+```javascript
+import React from 'react';
+import Todo  from './Todo.js';
+
+const TodoList = ({todos, onTodoClick}) => (
+  <ul>
+    {todos.map(todo => <Todo key={todo.id} {...todo} onClick={() => hooks.onTodoClick(todo.id)}/>)}
+  </ul>
+);
+
+export { TodoList };
+```
+
+<br/><br/><br/>
+## Mapping the state to props
+Next, `Redux` wants you to map its state to props.  Actually, we agree on this; it's the only part the Vanilla approach needs.  However, ours is a bit simpler.
+
+### The Redux Way
+So.  I actually have a very strong disagreement with this approach.  Whether or not to show `completed`s is a display issue, not a logic issue, and this should be handled in the `React` controls as a result, not in the control logic.  This is a misplacement of responsibility.
+
+I will fix this in our Vanilla implementation *after* the comparison, because we're maintaining their presentational controls, for now.
+
+```javascript
+const getVisibleTodos = (todos, filter) => {
+
+  switch (filter) {
+
+    case 'SHOW_ALL':
+      return todos
+
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+
+  }
+
+};
+
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  }
+};
+```
+
+### The Vanilla Way
+Somewhat shorter.  We fill out our `render` method from earlier.  We also add a parameter to the `constructor`, telling the `App` to where to render in the DOM.
+
+Of course, we're also getting the next ste
+
+```javascript
+render = () => { ReactDOM.render(<App hooks={}/>, this.dom_target); }
 ```
