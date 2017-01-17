@@ -561,7 +561,7 @@ Of course, the actual absolute minimum is zero, which the Vanilla approach achie
 npm install --save react-redux
 ```
 
-Note that `container components` in their tutorial also require awareness of `Redux`.  This means that things made as container components in `Redux` will not be available without `Redux` - not only are you locked out of other `Flux`es like `Omniscient`, `Marty`, `Material Flux`, `Flux This`, and `Fluxible`, but also more exotic data managers like `GraphQL`, `Relay`, `Cortex`, `w3c web component`s, or pure Vanilla controls.
+Note that `container components` in their tutorial also require awareness of `Redux`.  This means that things made as container components in `Redux` will not be available without `Redux` - not only are you locked out of other `Flux`es like `Omniscient`, `Marty`, `Material Flux`, `Flux This`, and `Fluxible`, but also more exotic data managers like `mobx`, `GraphQL`, `Relay`, `Cortex`, `w3c web component`s, or pure Vanilla controls.
 
 On the other hand, pure vanilla controls are just functions, and can be used by literally any other implementation.  It's a one-way requirement street, and a form of extreme lock-in.
 
@@ -681,7 +681,7 @@ This could just as easily be
 import React, { PropTypes } from 'react';
 
 const Todo = ({ onClick, completed, text }) =>
-  (<li onClick={onClick} className={`todo ${completed? 'complete':null}`}>{text}</li>);
+  (<li onClick={onClick} className={`todo ${props.completed? 'complete':null}`}>{text}</li>);
 
 Todo.propTypes = {
   onClick   : PropTypes.func.isRequired,
@@ -917,9 +917,9 @@ import VisibleTodoList from 'VisibleTodoList';
 
 const App = (props) => (
   <div>
-    <AddTodo         {...props} />
-    <VisibleTodoList {...props} />
-    <Footer          {...props} />
+    <AddTodo  {...props} />
+    <TodoList {...props} />
+    <Footer   {...props} />
   </div>
 )
 
@@ -927,6 +927,8 @@ export { App };  // honestly I'd like a more descriptive control name
 ```
 
 Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (*Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.*)
+
+Unrelated, we're going to use `TodoList` directly, because `VisibleTodoList` is just a set of `Redux` bindings, which we don't need, as a result.
 
 Either way, having the data come down from the outside and go through the flows in a concretely followable path makes it much easier to figure out where the data comes from, where it's going, and to debug the whole process.  Also, since it's now a piece of vanilla JS, just a flat datastructure that you preferably won't be changing, you generally know that the problem isn't coming from your controls.
 
@@ -986,7 +988,244 @@ render = () =>
     );
 ```
 
-This method call is probably the most complex part of the Vanilla app.
+This method call is probably the most complex part of the Vanilla app.  (It is not complex.)
 
 <br/>
-###
+## First container component's boilerplate: `VisibleTodoList`
+
+`Redux` wants a control to govern the data going into the other control from the store, which is bound and `connect`ed to the `Redux` store.
+
+### The Redux Way
+So, the `Redux` system uses a control called `VisibleTodoList` to implement a `Redux` filter over `TodoList`, to remove the things that should not fix the `Redux` filter, giving a layer of data indirection and hidden magic.  Because this determines whether the nodes exist *at all*, you can no longer use CSS animations to handle visual transitions, and you'll get a fair amount of DOM thrash and render thrash any time a very large list is rendered, quickly leading to yet another layer of indirection when someone needs to implement a windowing function.
+
+```javascript
+import { connect } from 'react-redux'
+import { setVisibilityFilter } from '../actions'
+import Link from '../components/Link'
+
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_ALL':
+      return todos
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+  }
+}
+
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+```
+
+Note that this isn't even the control implementation of `VisibleTodoList`; this is just its communications boilerplate. 😱
+
+This also comes with a discussion of what `Redux.connect()` is, whether `shouldComponentUpdate` is necessary (it's literally never necessary with pure controls,) when and how to dispatch actions *as a result of reading data*, and computing derived data with `reselect`.
+
+This is communicated as the basics of reading state with the `Redux API`.
+
+### The Vanilla Way
+
+None of this needs to exist.  Instead, we just implement a one-liner on the `Todo` itself, and a function that governs visibility.  A major upside of this approach is that *the data state is not transformed on its way down the tree*.  This eliminates many, many classes of bug that have to do with state manipulation within controls, and makes the manipulators pure functions that are **radically easier to test**.
+
+The alteration to the `Todo` control is easy: add a `?:` *ternary select* to the result of a call to a new function we'll make, `isVisible`, and if it gets a true, return the previous control; if not, return `null`, which is how `React` expresses "nothing."
+
+Then, the function to say whether a given visibility state is pretty similar, but it's a pure Javascript function - just a switch - with no side effects, no dispatching, and which is trivially easy to test (without e2e) and maintain.
+
+```javascript
+const Todo = (props) =>
+  ( isVisible(props)?
+      (<li onClick={props.onClick} className={`todo ${props.completed? 'complete':null}`}>{props.text}</li>)
+    : null
+  );
+
+const isVisible(props) => {
+  switch (props.vfilter) {
+    case 'SHOW_ALL'       : return true;
+    case 'SHOW_COMPLETED' : return props.todos[props.key].completed;
+    case 'SHOW_ACTIVE'    : return !props.todos[props.key].completed;
+    default               : throw 'no such visibility';
+  }
+}
+```
+
+
+
+<br/><br/><br/>
+## `FilterLink`
+
+This control is a convenience method to make `Redux` bindings and handle dispatching.  It does not need to exist in the Vanilla approach.
+
+### The Redux Way
+
+```javascript
+import { connect } from 'react-redux'
+import { setVisibilityFilter } from '../actions'
+import Link from '../components/Link'
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => {
+      dispatch(setVisibilityFilter(ownProps.filter))
+    }
+  }
+}
+
+const FilterLink = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Link)
+
+export default FilterLink
+```
+
+### The Vanilla Way
+We already did the JS part for this, earlier.  As a result, this is another no-op.
+
+```javascript
+/* let's see what's in the box?  nothing! */
+```
+
+
+
+<br/><br/><br/>
+## `AddTodo`
+Next we have the control that `Redux` called difficult earlier, since it might be a `container` and it might not.
+
+### The Redux Way
+Redux' implementation is a lot of work for a handler control.  It also involves an `HTML5 Form`, which causes some CORS problems in locked down contexts, for similar reasons to `iframe`s.
+
+```javascript
+import React from 'react'
+import { connect } from 'react-redux'
+import { addTodo } from '../actions'
+
+let AddTodo = ({ dispatch }) => {
+  let input
+
+  return (
+    <div>
+      <form onSubmit={e => {
+        e.preventDefault()
+        if (!input.value.trim()) {
+          return
+        }
+        dispatch(addTodo(input.value))
+        input.value = ''
+      }}>
+        <input ref={node => {
+          input = node
+        }} />
+        <button type="submit">
+          Add Todo
+        </button>
+      </form>
+    </div>
+  )
+}
+AddTodo = connect()(AddTodo)
+
+export default AddTodo
+```
+
+It's a little weird that this is a `let` rather than a `const` naming.  However, note that `Redux` uses pure functional controls at every opportunity, and reminds you to do the same.
+
+There's no reason for that to not be everywhere, and the benefits are dramatic.
+
+Notice also that the `Redux` implementation has now silently added the use of `ref`s, which the official `React` docs tell you to stay away from.  `ref`s are a way to get a handle to an instance, which you're very much not supposed to do.  They're a hidden tool for testing, and they're likely to disappear in `React 2`, so a lot of code is going to have a huge overhaul cost.
+
+### The Vanilla Way
+Pretty much just standard JS, and a call to the hook.
+
+```javascript
+import React from 'react';
+
+const AddTodo = (props) =>
+  (
+    <div>
+      <input id="add_todo"/>
+      <input type="button" onClick={() => props.hooks.add_todo(document.getElementById('add_todo').value)}/>
+    </div>
+  );
+```
+
+<br/><br/><br/>
+## `Provider`
+
+Next, a `Redux` app needs for its `store` to be made available to all the `container control`s.
+
+Since the Vanilla way doesn't have such a thing, this is unnecessary for us.
+
+### The Redux Way
+
+The `Redux` tutorial advises us to use - their words - a "magical" control called `Provider` which "makes the Store available to all your containers."
+
+This magic has had four sets of breaking API changes that required overhauls; `Redux` and `react-router` are community-famous for this.
+
+This is a particularly steep learning curve because you need to go on a source dive to learn how this actually works under the hood.
+
+```javascript
+import React from 'react'
+import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import { createStore } from 'redux'
+import todoApp from './reducers'
+import App from './components/App'
+
+let store = createStore(todoApp)
+
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
+```
+
+### The Vanilla Way
+
+This doesn't need to exist.
+
+```
+/* Look at all the nothing (sound_of_music.jpg) */
+```
+
+
+
+<br/><br/><br/>
+## Complete!
+
+We have now completed the Redux vs Vanilla tutorial.  We will, like the Redux tutorial, finish up with a complete source code listing.
+
+I will switch to listing Vanilla first, for dramatic impact.
+
+Just before I do, I'd like to point out that there is overhead at *literally every step* of the `Redux` process.  That means that the delta will actually get worse, as your application grows.  This is not something that starts "paying out as the software gets large;" rather, it gets rapidly worse.
+
+In particular, please review the `combined reducers` section.  This means that each reducer needs to consider every single other reducer while being written.  The contrast is trivial throw-away one-liners on a JS object, like you're already used to.
+
+Whereas most of the conceptual overhead is linear overhead (that is, the same amount of extra work at each step, eg adding an action, an action creator, a dispatch, and a reducer for a method call,) the reducer conflict issue is at least quadratic (each of N reducers must consider every other N reducer,) and once you consider that you need to interleave the timing expectations by re-diving the switch over and over, because without understanding that order you have to think non-deterministically, it's arguably exponential (each of N reducers must consider every other N reducer at every point in the timeline where it edits intermediate state.)
+
+And then they tell you to use *middlewares* in the advanced tutorial, meaning state change reasoning becomes hyper-exponential 😱 😭 😂 😅 😰
+
+### The Vanilla Way
+
+### The Redux Way
+
+And, the official
