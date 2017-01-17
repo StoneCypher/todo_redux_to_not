@@ -435,7 +435,7 @@ significant security error.)
 
 ```javascript
 import { createStore } from 'redux';
-import todoApp         from './reducers';
+import todoApp from './reducers';
 
 let store = createStore(todoApp, window.STATE_FROM_SERVER);
 ```
@@ -490,7 +490,8 @@ Note that our Vanilla setup has a significant advantage at this point: you can r
 It's also revealing simpler usage code, with no new concepts to learn:
 
 ```javascript
-import { TodoApp } from './vanilla/todoapp.js';
+import { TodoApp } from 'TodoApp';
+
 const App = new TodoApp();
 
 App.add_todo('Learn about no actions!');
@@ -508,6 +509,14 @@ You'll note that the state, in the inspector, looks exactly the same.  Using Chr
 ![](./inspector_screen.png)
 
 Note that the time machine behavior is not declinable, and if not manually managed, is better known as a "severe memory leak."  😂
+
+> Side note about packaging
+>
+> You'll notice that the Redux packaging is with respect to the local filesystem.  This is the first example from the Vanilla approach, and it is *not* filesystem local.
+>
+> This is because Babel will compile `import/export` down to CommonJS `require`, which can *and should* handle the packaging for us.  This will prevent duplicate module inclusion (because the packager can't guarantee the file doesn't change as a build side-effect,) make the resulting package smaller and faster, and remove reliance on the developer to know the local filesystem layout, also making the code easier to modify and restructure in the process, with less maintenance and fewer opportunities for defects.
+>
+> It is not clear why the tutorial chooses this hard-path approach.  It may be in the expectation that future browsers can consume directly, but by then, the module loader spec will offer name registration, and it will be both unnecessary and invoke counterproductive successive HTTP2 header hits in the stream.
 
 <br/><br/><br/>
 ## Misunderstanding unidirectional
@@ -828,6 +837,8 @@ export default Footer;
 #### `Footer` the Vanilla Way
 We don't need `FilterLink` in Vanilla because it's an expression of `Redux` binding, so we'll just skip using it in our own code.
 
+`ShowLink` is essentially the same thing, but without the `Redux` bindings, and also folding in an expression convenience, for much shorter, less repetitive, more maintainable, and more testable code.  It also ends us up with less live overhead, since this is all computable as a one-time
+
 We could choose to write this differently, as a result:
 
 ```javascript
@@ -835,16 +846,89 @@ import React      from 'react';
 
 const ShowLink      = (myHook, myText) => <a className="clickable" onClick={myHook}>myText</FilterLink>,
 
-      ShowAll       = ShowLink(hooks.set_vfilter('SHOW_ALL')},       'All'),
-      ShowActive    = ShowLink(hooks.set_vfilter('SHOW_ACTIVE')},    'Active'),
-      ShowCompleted = ShowLink(hooks.set_vfilter('SHOW_COMPLETED')}, 'Completed'),
+      ShowAll       = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ALL')},       'All'),
+      ShowActive    = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ACTIVE')},    'Active'),
+      ShowCompleted = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_COMPLETED')}, 'Completed'),
 
-      Footer        = (hooks) => <p>Show: {<ShowAll/>}, {<ShowActive/>}, {<ShowCompleted/>}</p>;
+      Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
 
 export { Footer };
 ```
 
+One change to note is that we are manually passing the `props` down in `{...props}` a lot.  That's mildly annoying, but it allows us to ditch all of `Redux` as a result, and there's never anything to debug or understand, or any `Redux` lock-in, so it's a good trade.
+
+These are all `React pure functional controls`.  `React` offers three mechanisms to create controls at the time of this writing:
+
+* "Classic controls" with `React.createComponent`
+* "ES6 controls" with `class Foo extends React.component`
+* "Pure functional controls" with `const Foo = (props) => <div>lol</div>`;
+
+We'll discuss why being `pure functional` is good later in the tutorial, but for now, please take note of that basically everything we write is a `React pure functional control` in the Vanilla approach.
+
+In brief, they're much faster, much easier to test, much easier to understand, and force you to discard a lot of dangerous facilities, like `React state` and (not force but make easier) manual management of the `React lifecycle`.  Plus, they *always* aggressively get `shouldComponentUpdate` right, by definition.
+
+Explanations later.  Let's not get distracted, for now. 😊
+
+### `App`
+For the `Redux` app, this is just a top level layout widget.
+
+For the `Vanilla` app, this is where the data meets the road.  This turns out to be trivially simple, though.
+
+#### `App` the Redux Way
+At this time, they are using two components which have not yet been implemented: `AddTodo` and `VisibleTodoList`.
+
+This is fine practice, but it can be confusing, because you can't check your work as you're working (since it relies on components that don't yet exist.)  It may be of use to write dummy controls along the way.  However, since we're doing their tut, we won't do it that way here.
+
+Their top level render approach:
+
+```javascript
+import React from 'react';
+import Footer from './Footer';
+import AddTodo from '../containers/AddTodo';
+import VisibleTodoList from '../containers/VisibleTodoList';
+
+const App = () => (
+  <div>
+    <AddTodo />
+    <VisibleTodoList />
+    <Footer />
+  </div>
+);
+
+export default App;
+```
+
+Fairly straightforward.  No sign of the data anywhere, at the top level.  This can be confusing to new developers.
+
+#### `App` the Vanilla Way
+Our top level, data-down approach:
+
+```javascript
+import React           from 'react';
+import Footer          from 'Footer';
+import AddTodo         from 'AddTodo';
+import VisibleTodoList from 'VisibleTodoList';
+
+const App = (props) => (
+  <div>
+    <AddTodo         {...props} />
+    <VisibleTodoList {...props} />
+    <Footer          {...props} />
+  </div>
+)
+
+export { App };  // honestly I'd like a more descriptive control name
+```
+
+Literally the only changes are taking a `props` argument, and using the **spread operator** `...` inside of a **value statement** `{ }` to pass the props down to child controls.  (Well, and the changed non-disk-local packaging paths, and non-default `export`, I guess, but that's not about `Vanilla`; that's just using `import/export` fully.)
+
+Either way, having the data come down from the outside and go through the flows in a concretely followable path makes it much easier to figure out where the data comes from, where it's going, and to debug the whole process.  Also, since it's now a piece of vanilla JS, just a flat datastructure that you preferably won't be changing, you generally know that the problem isn't coming from your controls.
+
+Which, incidentally, since it always comes from the outside, nets you `immutability` for free.  No need for `immutable.js` or its learning/implementation overhead.  😁
+
 <br/><br/><br/>
+%% COMEBACK
+
 ## Mapping the state to props
 Next, `Redux` wants you to map its state to props.  Actually, we agree on this; it's the only part the Vanilla approach needs.  However, ours is a bit simpler.
 
@@ -879,9 +963,7 @@ const mapStateToProps = (state) => {
 ```
 
 ### The Vanilla Way
-Somewhat shorter.  We fill out our `render` method from earlier.  We also add a parameter to the `constructor`, telling the `App` to where to render in the DOM.
-
-Of course, we're also getting the next ste
+Somewhat shorter.  We fill out our `render` method from earlier.  We also add a parameter to the `constructor`, telling the `App` to where to render in the DOM.  %% COMEBACK
 
 ```javascript
 render = () => { ReactDOM.render(<App hooks={}/>, this.dom_target); }
