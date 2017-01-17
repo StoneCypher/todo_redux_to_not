@@ -7,33 +7,103 @@
     <script charset="utf-8" src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
     <script charset="utf-8" src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 
-    <script charset="utf-8" type="text/babel" src="todo.js"></script>
+    <style type="text/css">
+      li                 { list-style-type: none; height: 1.2em; line-height: 100%; }
+      li:before          { content: '✖️'; display: inline-block; height: 1.2em; width: 1.2em; }
+      li.complete:before { content: '✔'; display: inline-block; }
+      .todo              { text-decoration: none;         color: black; }
+      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fee; }
+    </style>
 
     <script charset="utf-8" type="text/babel">
 
+        const isVisible = (props) => {
+                switch (props.vfilter) {
+                  case 'SHOW_ALL'       : return true;
+                  case 'SHOW_COMPLETED' : return props.todos[props.which].completed;
+                  case 'SHOW_ACTIVE'    : return !props.todos[props.which].completed;
+                  default               : throw `no such visibility - ${props.vfilter}`;
+                }
+              };
+
+        const AddTodo = (props) => {
+                const clicker = () => {
+                  const AT = document.getElementById('add_todo');
+                  props.hooks.add_todo(AT.value);
+                  AT.value = '';
+                }
+                return (
+                  <div>
+                    <input id="add_todo"/>
+                    <input type="button" onClick={clicker}/>
+                  </div>
+                );
+              }
+
+        const Todo = (props) => {
+                const thisTodo = props.todos[props.which],
+                      toggler  = () => props.hooks.toggle_todo(props.which);
+
+                return ( isVisible(props)?
+                  ( <li onClick={toggler} className={`todo${thisTodo.completed? ' complete':''}`}>{thisTodo.text}</li> )
+                  : null
+                );
+              }
+
+        const TodoList = (props) => (
+                <ul>
+                  {props.todos.map(todo => <Todo key={todo.id} which={todo.id} {...props} onClick={() => hooks.onTodoClick(todo.id)}/>)}
+                </ul>
+              );
+
+        const AppRoot = (props) => (
+                <div>
+                  <AddTodo  {...props} />
+                  <TodoList {...props} />
+                  <Footer   {...props} />
+                </div>
+              )
+
+        const ShowLink      = (myHook, myText) => <a href="#" className="clickable" onClick={myHook}>{myText}</a>,
+
+              ShowAll       = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ALL'),       'All'       ),
+              ShowActive    = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'    ),
+              ShowCompleted = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed' ),
+
+              Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
+
+
+
         class TodoApp {
 
-            constructor(tgt)  { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt;    this.render(); }
-            current_state()   { return this.app_state; }
+                constructor(tgt)        { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt; }
 
-            add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo});                this.render(); }
-            toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
-            set_vfilter(vfil) { this.app_state.vfilter = vfil;                                          this.render(); }
+                current_state = ()   => { return this.app_state; }
 
-            hooks()           { return {}; }
+                add_todo      = todo => {
+                  const t = this.app_state.todos;
+                  t.push({completed:false, id:t.length, text:todo});
+                  this.render();
+                }
 
-            render()          {
+                toggle_todo   = i    => { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
+                set_vfilter   = vfil => { this.app_state.vfilter = vfil;                                          this.render(); }
 
-                ReactDOM.render(
-                    <App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
-                    this.dom_target
-                );
+                hooks         = ()   => { return { add_todo: this.add_todo, toggle_todo: this.toggle_todo, set_vfilter: this.set_vfilter }; }
 
-            }
+                render        = ()   => {
 
-        }
+                  ReactDOM.render(
+                    <AppRoot hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
+                    this.tgt
+                  );
 
-        const App = new TodoApp(document.getElementById('tgt'));
+                }
+
+              }
+
+        const TheApp = new TodoApp(document.getElementById('tgt'));
+              TheApp.render();
 
     </script>
 
