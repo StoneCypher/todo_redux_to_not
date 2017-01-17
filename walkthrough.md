@@ -978,7 +978,15 @@ We fill out our `render` method from earlier.  We also add a parameter to the `c
 This is where those top-level `props` that we keep passing down as `{...props}` actually originate: the `props` of the root control, as applied when `render`ed by `React`.  The default, standard way. 🙏
 
 ```javascript
-render = () => { ReactDOM.render(<App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos}/>, this.dom_target); }
+render = () =>
+
+    ReactDOM.render(
+        <App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos}/>,
+        this.dom_target
+    );
 ```
 
 This method call is probably the most complex part of the Vanilla app.
+
+<br/>
+###
