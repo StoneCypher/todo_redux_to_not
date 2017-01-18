@@ -1248,12 +1248,488 @@ Please note that these two apps are both complete, and both do approximately the
 
 ### The Vanilla Way
 
-```html
-```
+The vanilla way, including container HTML, clocks in at 114 lines with vertical padding, and including the `React Starter Kit` as a toy build system.  Since the `Redux` version doesn't include these, I'll use 87 as the number instead, since that's just the Javascript part.
 
-```javascript
+We can break these up into a bunch of files if we want to, and it'd be smart to run this through a static Babel build, but, this is fine for making an example.
+
+```html
+<!doctype html>
+<html>
+
+  <head>
+
+    <script charset="utf-8" src="https://unpkg.com/react@latest/dist/react.js"></script>
+    <script charset="utf-8" src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
+    <script charset="utf-8" src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+    <style type="text/css">
+      li                 { list-style-type: none; height: 1.2em; line-height: 100%; }
+      li:before          { content: '✖️'; display: inline-block; height: 1.2em; width: 1.2em; }
+      li.complete:before { content: '✔'; display: inline-block; }
+      .todo              { text-decoration: none;         color: black; }
+      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fee; }
+    </style>
+
+    <script charset="utf-8" type="text/babel">
+
+        const isVisible = (props) => {
+                switch (props.vfilter) {
+                  case 'SHOW_ALL'       : return true;
+                  case 'SHOW_COMPLETED' : return props.todos[props.which].completed;
+                  case 'SHOW_ACTIVE'    : return !props.todos[props.which].completed;
+                  default               : throw `no such visibility - ${props.vfilter}`;
+                }
+              };
+
+        const AddTodo = (props) => {
+                const clicker = () => {
+                  const AT = document.getElementById('add_todo');
+                  props.hooks.add_todo(AT.value);
+                  AT.value = '';
+                }
+                return (
+                  <div>
+                    <input id="add_todo"/>
+                    <input type="button" onClick={clicker}/>
+                  </div>
+                );
+              }
+
+        const Todo = (props) => {
+                const thisTodo = props.todos[props.which],
+                      toggler  = () => props.hooks.toggle_todo(props.which);
+
+                return ( isVisible(props)?
+                  ( <li onClick={toggler} className={`todo${thisTodo.completed? ' complete':''}`}>{thisTodo.text}</li> )
+                  : null
+                );
+              }
+
+        const TodoList = (props) => (
+                <ul>
+                  {props.todos.map(todo => <Todo key={todo.id} which={todo.id} {...props} onClick={() => hooks.onTodoClick(todo.id)}/>)}
+                </ul>
+              );
+
+        const AppRoot = (props) => (
+                <div>
+                  <AddTodo  {...props} />
+                  <TodoList {...props} />
+                  <Footer   {...props} />
+                </div>
+              )
+
+        const ShowLink      = (myHook, myText) => <a href="#" className="clickable" onClick={myHook}>{myText}</a>,
+
+              ShowAll       = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ALL'),       'All'       ),
+              ShowActive    = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'    ),
+              ShowCompleted = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed' ),
+
+              Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
+
+
+
+        class TodoApp {
+
+                constructor(tgt)        { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt; }
+
+                current_state = ()   => { return this.app_state; }
+
+                add_todo      = todo => {
+                  const t = this.app_state.todos;
+                  t.push({completed:false, id:t.length, text:todo});
+                  this.render();
+                }
+
+                toggle_todo   = i    => { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
+                set_vfilter   = vfil => { this.app_state.vfilter = vfil;                                          this.render(); }
+
+                hooks         = ()   => { return { add_todo: this.add_todo, toggle_todo: this.toggle_todo, set_vfilter: this.set_vfilter }; }
+
+                render        = ()   => {
+
+                  ReactDOM.render(
+                    <AppRoot hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
+                    this.tgt
+                  );
+
+                }
+
+              }
+
+        const TheApp = new TodoApp(document.getElementById('tgt'));
+              TheApp.render();
+
+    </script>
+
+  </head>
+
+  <body><div id="tgt"></div></body>
+
+</html>
 ```
 
 ### The Redux Way
 
-And, the official
+And, the official `Redux` approach clocks in at a whopping 293 lines.  This does not include HTML, a packager, or a build script; this code does not run out of the box, and needs to have at least `Babel` and either `webpack` or `browserify` added to it.
+
+***This means that the Vanilla version is only 29% the size***.
+
+This also requires the introduction of a minimum of two new packages from `npm`, and encourages the use of two others.
+
+`index.js` - 15 lines
+
+```javascript
+import React from 'react'
+import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import { createStore } from 'redux'
+import todoApp from './reducers'
+import App from './components/App'
+
+let store = createStore(todoApp)
+
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
+```
+
+`actions/index.js` - 22 lines
+
+```javascript
+let nextTodoId = 0
+export const addTodo = (text) => {
+  return {
+    type: 'ADD_TODO',
+    id: nextTodoId++,
+    text
+  }
+}
+
+export const setVisibilityFilter = (filter) => {
+  return {
+    type: 'SET_VISIBILITY_FILTER',
+    filter
+  }
+}
+
+export const toggleTodo = (id) => {
+  return {
+    type: 'TOGGLE_TODO',
+    id
+  }
+}
+```
+
+`reducers/todos.js` - 39 lines
+
+```javascript
+const todo = (state = {}, action) => {
+  switch (action.type) {
+    case 'ADD_TODO':
+      return {
+        id: action.id,
+        text: action.text,
+        completed: false
+      }
+    case 'TOGGLE_TODO':
+      if (state.id !== action.id) {
+        return state
+      }
+
+      return Object.assign({}, state, {
+        completed: !state.completed
+      })
+
+    default:
+      return state
+  }
+}
+
+const todos = (state = [], action) => {
+  switch (action.type) {
+    case 'ADD_TODO':
+      return [
+        ...state,
+        todo(undefined, action)
+      ]
+    case 'TOGGLE_TODO':
+      return state.map(t =>
+        todo(t, action)
+      )
+    default:
+      return state
+  }
+}
+
+export default todos
+```
+
+`reducers/visibilityFilter.js` - 10 lines
+
+```javascript
+const visibilityFilter = (state = 'SHOW_ALL', action) => {
+  switch (action.type) {
+    case 'SET_VISIBILITY_FILTER':
+      return action.filter
+    default:
+      return state
+  }
+}
+
+export default visibilityFilter
+```
+
+`reducers/index.js` - 10 lines
+
+```javascript
+import { combineReducers } from 'redux'
+import todos from './todos'
+import visibilityFilter from './visibilityFilter'
+
+const todoApp = combineReducers({
+  todos,
+  visibilityFilter
+})
+
+export default todoApp
+```
+
+`components/Todo.js` - 20 lines
+
+```javascript
+import React, { PropTypes } from 'react'
+
+const Todo = ({ onClick, completed, text }) => (
+  <li
+    onClick={onClick}
+    style={{
+      textDecoration: completed ? 'line-through' : 'none'
+    }}
+  >
+    {text}
+  </li>
+)
+
+Todo.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  completed: PropTypes.bool.isRequired,
+  text: PropTypes.string.isRequired
+}
+
+export default Todo
+```
+
+`components/TodoList.js` - 25 lines
+
+```javascript
+import React, { PropTypes } from 'react'
+import Todo from './Todo'
+
+const TodoList = ({ todos, onTodoClick }) => (
+  <ul>
+    {todos.map(todo =>
+      <Todo
+        key={todo.id}
+        {...todo}
+        onClick={() => onTodoClick(todo.id)}
+      />
+    )}
+  </ul>
+)
+
+TodoList.propTypes = {
+  todos: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    completed: PropTypes.bool.isRequired,
+    text: PropTypes.string.isRequired
+  }).isRequired).isRequired,
+  onTodoClick: PropTypes.func.isRequired
+}
+
+export default TodoList
+```
+
+`components/Link.js` - 26 lines
+
+```javascript
+import React, { PropTypes } from 'react'
+
+const Link = ({ active, children, onClick }) => {
+  if (active) {
+    return <span>{children}</span>
+  }
+
+  return (
+    <a href="#"
+       onClick={e => {
+         e.preventDefault()
+         onClick()
+       }}
+    >
+      {children}
+    </a>
+  )
+}
+
+Link.propTypes = {
+  active: PropTypes.bool.isRequired,
+  children: PropTypes.node.isRequired,
+  onClick: PropTypes.func.isRequired
+}
+
+export default Link
+```
+
+`components/Footer.js` - 22 lines
+
+```javascript
+import React from 'react'
+import FilterLink from '../containers/FilterLink'
+
+const Footer = () => (
+  <p>
+    Show:
+    {" "}
+    <FilterLink filter="SHOW_ALL">
+      All
+    </FilterLink>
+    {", "}
+    <FilterLink filter="SHOW_ACTIVE">
+      Active
+    </FilterLink>
+    {", "}
+    <FilterLink filter="SHOW_COMPLETED">
+      Completed
+    </FilterLink>
+  </p>
+)
+
+export default Footer
+```
+
+`components/App.js` - 14 lines
+
+```javascript
+import React from 'react'
+import Footer from './Footer'
+import AddTodo from '../containers/AddTodo'
+import VisibleTodoList from '../containers/VisibleTodoList'
+
+const App = () => (
+  <div>
+    <AddTodo />
+    <VisibleTodoList />
+    <Footer />
+  </div>
+)
+
+export default App
+```
+
+`containers/VisibleTodoList.js` - 35 lines
+
+```javascript
+import { connect } from 'react-redux'
+import { toggleTodo } from '../actions'
+import TodoList from '../components/TodoList'
+
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_ALL':
+      return todos
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+  }
+}
+
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+
+const VisibleTodoList = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TodoList)
+
+export default VisibleTodoList
+```
+
+`containers/FilterLink.js` - 24 lines
+
+```javascript
+import { connect } from 'react-redux'
+import { setVisibilityFilter } from '../actions'
+import Link from '../components/Link'
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => {
+      dispatch(setVisibilityFilter(ownProps.filter))
+    }
+  }
+}
+
+const FilterLink = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Link)
+
+export default FilterLink
+```
+
+`containers/AddTodo.js` - 31 lines
+
+```javascript
+import React from 'react'
+import { connect } from 'react-redux'
+import { addTodo } from '../actions'
+
+let AddTodo = ({ dispatch }) => {
+  let input
+
+  return (
+    <div>
+      <form onSubmit={e => {
+        e.preventDefault()
+        if (!input.value.trim()) {
+          return
+        }
+        dispatch(addTodo(input.value))
+        input.value = ''
+      }}>
+        <input ref={node => {
+          input = node
+        }} />
+        <button type="submit">
+          Add Todo
+        </button>
+      </form>
+    </div>
+  )
+}
+AddTodo = connect()(AddTodo)
+
+export default AddTodo
+```
