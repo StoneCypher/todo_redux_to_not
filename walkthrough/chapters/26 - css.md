@@ -22,3 +22,7 @@ li.complete:before { content: '✔'; color: #a00; }
 
 li, .show_link     { transition: 0.5s all; }
 ```
+
+[Prev - Controls - Provider](25 - controls - provider.md)
+
+[Next - Final Comparison](27 - final comparison.md)
