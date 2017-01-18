@@ -1,10 +1,3 @@
-# TODO
-
-* reimplement as reducers at the end
-* slide show version?
-
-----
-
 # Walkthrough
 
 We're going to do the [Redux Basics tutorial](http://redux.js.org/docs/basics/)

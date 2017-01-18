@@ -16,7 +16,6 @@ In essence, this is a `You Might Not Need Redux` site.
 
 ## Contents
 
-1. A [step by step walkthrough](walkthrough.md) of doing it the Not Redux way.
-1. A copy of the [original `Redux` codebase](./original_redux/)
-1. A copy of the [vanilla codebase](./vanilla/)
-1. A post-hoc comparison of the two
+1. A [step by step walkthrough](./walkthrough/walkthrough_index.md) of doing it the Not Redux way.
+1. A live hosting of the [vanilla codebase](https://stonecypher.github.io/todo_redux_to_not/vanilla/todo.html)
+
