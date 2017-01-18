@@ -36,6 +36,6 @@ toggle_todo = i    => { /* not yet implemented */ }
 set_vfilter = vfil => { /* not yet implemented */ }
 ```
 
-[Prev - Intro](03 - getting started.md)
+[Prev - Getting Started](03 - getting started.md)
 
-[Next - Intro](05 - todo.md)
+[Next - Action Creators](05 - action creators.md)

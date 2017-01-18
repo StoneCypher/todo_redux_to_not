@@ -20,3 +20,5 @@ easier.
 Let's begin.
 
 [Next - A Note About Overhead](02 - a note about overhead.md)
+
+[Jump to end - Final Comparison](27 - final comparison.md)

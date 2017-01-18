@@ -31,6 +31,6 @@ class TodoApp {
 export { TodoApp };
 ```
 
-[Prev - Intro](02 - a note about overhead.md)
+[Prev - A Note About Overhead](02 - a note about overhead.md)
 
-[Next - Intro](04 - actions.md)
+[Next - Actions](04 - actions.md)

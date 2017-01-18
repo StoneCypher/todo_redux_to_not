@@ -35,4 +35,4 @@ The `Redux` way ends up with
 
 [Prev - Intro](01 - intro.md)
 
-[Next - Intro](03 - getting started.md)
+[Next - Getting Started](03 - getting started.md)

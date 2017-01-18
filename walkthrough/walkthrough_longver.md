@@ -584,16 +584,6 @@ A two printed page tutorial on what's actually happening when you update applica
 
 Also below the "next steps" link, there's a note for advanced users to check out `async flow` in the advanced tutorial, to learn how `middleware` transforms `async action`s before they reach the `reducer`s.
 
-### The Vanilla Way
-
-Setting a member variable in pure Javascript, with no new concepts, and moving on with life.
-
-<br/><br/><br/>
-## Connecting to a React App
-Let's get our data connected to a `React` renderer.
-
-### The Redux Way
-
 Now you're expected to install *an entire extra package* to set up "React Redux Bindings."  Note that the entire purpose of React originally was to get away from bindings, as they don't scale conceptually or in browser performance, according to the original React team.
 
 Next we're introduced to a Redux concept called "presentational components" and "container components."  The entire purpose of this new divide is to accomodate that Redux forces you to use the `React` facility called `state` (which is confusingly different than `Redux State`,) and a tacit admission that state in controls is `Very Bad`&trade; and should be kept to an absolute minimum.
@@ -629,6 +619,11 @@ The difference with `Redux` controls is we're to make them `Redux` aware, add a 
 And we're supposed to do that as little as possible.  (As little as possible is zero.  In `Redux` terminology, a Vanilla `React` app is just pure "presentational component"s.)
 
 All we need to do is accept that the `Redux` bindings aren't actually necessary, and we can follow their advice and go pure "presentational," and drop three libraries, 14 concepts, ~40-50% of code, and huge CPU overhead, in the process.  😉
+
+### The Vanilla Way
+We just set up the `render` call.  We handle that later, under "mapping state to props."
+
+It's a one-liner 😂
 
 <br/><br/><br/>
 ## Designing components
