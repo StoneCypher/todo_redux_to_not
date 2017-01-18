@@ -30,13 +30,21 @@ Let's begin.
 
 That 71% drop in size doesn't come from nowhere.
 
+These numbers are for the same app, running on the same data state, making the same DOM layout, offering the same functionality.
+
+### The Vanilla Way
+
 The vanilla way ends up with
+  * 87 lines of code,
   * five controls,
   * one class,
   * one class instance, and
   * one library (`React`.)
 
+### The Redux Way
+
 The `Redux` way ends up with
+  * 293 lines of code (*3.3x larger*,)
   * eight internal controls,
   * one inherited control (`<Provider>`,)
   * five reducer functions,
@@ -47,7 +55,7 @@ The `Redux` way ends up with
   * a state filter predicate,
   * a state matcher function,
   * three libraries (`React`, `Redux`, and `redux-react`,)
-    * suggests two more (`immutable.js` and `COMEBACK`,)
+    * suggests two more (`immutable.js` and `reselect`,)
   * six sets of bindings,
   * a `store` class instance,
   * creates both `module` and `function instance` scoped state in five places outside the `store`,
@@ -105,8 +113,8 @@ We will instead provide three callback hooks for announcements.
 ### Redux way
 
 ```javascript
-export const ADD_TODO              = 'ADD_TODO'
-export const TOGGLE_TODO           = 'TOGGLE_TODO'
+export const ADD_TODO = 'ADD_TODO'
+export const TOGGLE_TODO = 'TOGGLE_TODO'
 export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
 
 export const VisibilityFilters = {
@@ -126,9 +134,9 @@ So, we'll instead offer
 
 ```javascript
 // inside class TodoApp
-add_todo(todo)    { /* not yet implemented */ }
-toggle_todo(i)    { /* not yet implemented */ }
-set_vfilter(vfil) { /* not yet implemented */ }
+add_todo    = todo => { /* not yet implemented */ }
+toggle_todo = i    => { /* not yet implemented */ }
+set_vfilter = vfil => { /* not yet implemented */ }
 ```
 
 <br/><br/><br/>
@@ -369,9 +377,9 @@ function todoApp(state = initialState, action) {
 It's just three simple member-setting one-liners (filling out the empties from earlier)
 
 ```javascript
-add_todo(todo)    { this.app_state.todos.push(todo); }
-toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; }
-set_vfilter(vfil) { this.app_state.vfilter = vfil; }
+add_todo    = todo => { this.app_state.todos.push(todo); }
+toggle_todo = i    => { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; }
+set_vfilter = vfil => { this.app_state.vfilter = vfil; }
 ```
 
 <br/><br/><br/>
@@ -795,9 +803,9 @@ In Vanilla, we would write
 import React from 'react';
 import Todo  from 'Todo';
 
-const TodoList = ({hooks, todos, onTodoClick}) => (
+const TodoList = (props) => (
   <ul>
-    {todos.map(todo => <Todo key={todo.id} {...todo} onClick={() => hooks.onTodoClick(todo.id)}/>)}
+    {props.todos.map(todo => <Todo key={todo.id} which={todo.id} {...props} onClick={() => hooks.onTodoClick(todo.id)}/>)}
   </ul>
 );
 
@@ -892,13 +900,11 @@ We don't need `FilterLink` in Vanilla because it's an expression of `Redux` bind
 We could choose to write this differently, as a result:
 
 ```javascript
-import React      from 'react';
+const ShowLink      = (myHook, myText) => <a href="#" className="show_link" onClick={myHook}>{myText}</a>,
 
-const ShowLink      = (myHook, myText) => <a className="clickable" onClick={myHook}>myText</a>,
-
-      ShowAll       = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ALL'),       'All'),
-      ShowActive    = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'),
-      ShowCompleted = (props)          => ShowLink(props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed'),
+      ShowAll       = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ALL'),       'All'       ),
+      ShowActive    = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'    ),
+      ShowCompleted = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed' ),
 
       Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
 
@@ -965,7 +971,7 @@ const AppRoot = (props) => (
     <TodoList {...props} />
     <Footer   {...props} />
   </div>
-)
+);
 
 export { AppRoot };
 ```
@@ -981,8 +987,6 @@ Which, incidentally, since it always comes from the outside, nets you `immutabil
 
 
 <br/><br/><br/>
-%% COMEBACK
-
 ## Mapping the state to props
 Next, `Redux` wants you to map its state to props.  Actually, we agree on this; it's the only part the Vanilla approach needs.  However, ours is a bit simpler.
 
@@ -1024,24 +1028,31 @@ We fill out our `render` method from earlier.  We also add a parameter to the `c
 This is where those top-level `props` that we keep passing down as `{...props}` actually originate: the `props` of the root control, as applied when `render`ed by `React`.  The default, standard way. 🙏
 
 ```javascript
-render() {
+render = () => {
 
-    ReactDOM.render(
-        <App hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
-        this.dom_target
-    );
+  ReactDOM.render(
+    <AppRoot hooks={this.hooks()} vfilter={this.app_state.vfilter} todos={this.app_state.todos} />,
+    this.tgt
+  );
 
 }
 ```
 
 We'll also decorate the methods that change state with a `.render` call, as well as the `constructor`.
 
+We'll also set the `id` of the todo to the length of the `app_state.todos` list, so that it'll always be right (yay eliminating the unnecessary counter in the `Redux` tutorial!)  And, we'll bind that to `as_todos` to keep the code readable.
+
 ```javascript
 constructor(tgt)  { this.app_state = { vfilter: 'SHOW_ALL', todos: [] }; this.tgt = tgt;    this.render(); }
 
-add_todo(todo)    { this.app_state.todos.push({completed:false, text:todo});                this.render(); }
-toggle_todo(i)    { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
-set_vfilter(vfil) { this.app_state.vfilter = vfil;                                          this.render(); }
+add_todo = todo => {
+  const as_todos = this.app_state.todos;
+  as_todos.push({completed:false, id:as_todos.length, text:todo});
+  this.render();
+}
+
+toggle_todo = i    => { this.app_state.todos[i].completed = !this.app_state.todos[i].completed; this.render(); }
+set_vfilter = vfil => { this.app_state.vfilter = vfil;                                          this.render(); }
 ```
 
 This means that the app now re-renders itself when its internal state changes.  Nice and tidy.  😊
@@ -1111,9 +1122,9 @@ const Todo = (props) =>
 const isVisible = (props) => {
   switch (props.vfilter) {
     case 'SHOW_ALL'       : return true;
-    case 'SHOW_COMPLETED' : return props.todos[props.key].completed;
-    case 'SHOW_ACTIVE'    : return !props.todos[props.key].completed;
-    default               : throw 'no such visibility';
+    case 'SHOW_COMPLETED' : return props.todos[props.which].completed;
+    case 'SHOW_ACTIVE'    : return !props.todos[props.which].completed;
+    default               : throw `no such visibility - ${props.vfilter}`;
   }
 };
 ```
@@ -1216,14 +1227,18 @@ Pretty much just standard JS, and a call to the hook.
 import React from 'react';
 
 const AddTodo = (props) => {
-        const adder = () => props.hooks.add_todo(document.getElementById('add_todo').value);
-        return (
-          <div>
-            <input id="add_todo" onBlur={adder}/>
-            <input value="Add todo" type="button" onClick={adder}/>
-          </div>
-        );
-      }
+  const clicker = () => {
+    const AT = document.getElementById('add_todo');
+    props.hooks.add_todo(AT.value);
+    AT.value = '';
+  }
+  return (
+    <div>
+      <input id="add_todo" onKeyUp={event => { if (event.key === 'Enter') { clicker(); }}}/>
+      <input type="button" onClick={clicker} value="Add todo"/>
+    </div>
+  );
+};
 ```
 
 <br/><br/><br/>
@@ -1270,6 +1285,34 @@ This doesn't need to exist.
 
 
 <br/><br/><br/>
+## Let's style a bit
+It's ugly.  Could we just put some quick CSS paint on it please?  This isn't part of their tutorial at all.  I just need my eyes to not do this.  *Need*.
+
+Same for both.  17 lines.
+
+```css
+ul                 { margin: 1em 0 0 0; padding: 0; }
+
+li                 { list-style-type: none; height: 1.2em; line-height: 100%; padding: 0.25em 1em;
+                     margin: 0 0 1px 0; background-color: #fbfbfb; border: 1px solid #eee; border-radius: 0.5em; }
+
+li:before          { content: '✗'; color: rgba(0,0,0, 0.3); display: inline-block; width: 1.2em; vertical-align: text-bottom; text-align: center; }
+li.complete:before { content: '✔'; color: #a00; }
+
+.show_link         { color: #04b; text-decoration: none; pointer: cursor; background-color: #f0f8ff;
+                     border-radius: 0.5em; padding: 0 0.5em; border: 1px solid #def; }
+
+.show_link.active  { color: white; text-decoration: none; background-color: #004488; border-color: black; }
+
+.todo              { text-decoration: none;         color: black; }
+.todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fdd; border-color: #fbb; }
+
+li, .show_link     { transition: 0.5s all; }
+```
+
+
+
+<br/><br/><br/>
 ## Complete!
 
 We have now completed the Redux vs Vanilla tutorial.  We will, like the Redux tutorial, finish up with a complete source code listing.
@@ -1296,9 +1339,13 @@ The vanilla way, including container HTML, clocks in at 114 lines with vertical 
 
 We can break these up into a bunch of files if we want to, and it'd be smart to run this through a static Babel build, but, this is fine for making an example.
 
-The vanilla way ends up with five controls, one class, one instance, and one library (`React`.)
+The vanilla way ends up with
+  * five controls,
+  * one class,
+  * one instance,
+  * and one library (`React`.)
 
-`todo.html` - 114 lines, self-contained
+`todo.html` - (128 lines with framing), self-contained
 
 ```html
 <!doctype html>
@@ -1311,11 +1358,25 @@ The vanilla way ends up with five controls, one class, one instance, and one lib
     <script charset="utf-8" src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 
     <style type="text/css">
-      li                 { list-style-type: none; height: 1.2em; line-height: 100%; }
-      li:before          { content: '✖️'; display: inline-block; height: 1.2em; width: 1.2em; }
-      li.complete:before { content: '✔'; display: inline-block; }
+
+      ul                 { margin: 1em 0 0 0; padding: 0; }
+
+      li                 { list-style-type: none; height: 1.2em; line-height: 100%; padding: 0.25em 1em;
+                           margin: 0 0 1px 0; background-color: #fbfbfb; border: 1px solid #eee; border-radius: 0.5em; }
+
+      li:before          { content: '✗'; display: inline-block; width: 1.2em; vertical-align: text-bottom; }
+      li.complete:before { content: '✔'; }
+
+      .show_link         { color: #04b; text-decoration: none; pointer: cursor; background-color: #f0f8ff;
+                           border-radius: 0.5em; padding: 0 0.5em; border: 1px solid #def; }
+
+      .show_link.active  { color: white; text-decoration: none; background-color: #004488; border-color: black; }
+
       .todo              { text-decoration: none;         color: black; }
-      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fee; }
+      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fdd; border-color: #fbb; }
+
+      li, .show_link     { transition: 0.5s all; }
+
     </style>
 
     <script charset="utf-8" type="text/babel">
@@ -1337,11 +1398,11 @@ The vanilla way ends up with five controls, one class, one instance, and one lib
                 }
                 return (
                   <div>
-                    <input id="add_todo"/>
-                    <input type="button" onClick={clicker}/>
+                    <input id="add_todo" onKeyUp={event => { if (event.key === 'Enter') { clicker(); }}}/>
+                    <input type="button" onClick={clicker} value="Add todo"/>
                   </div>
                 );
-              }
+              };
 
         const Todo = (props) => {
                 const thisTodo = props.todos[props.which],
@@ -1351,7 +1412,7 @@ The vanilla way ends up with five controls, one class, one instance, and one lib
                   ( <li onClick={toggler} className={`todo${thisTodo.completed? ' complete':''}`}>{thisTodo.text}</li> )
                   : null
                 );
-              }
+              };
 
         const TodoList = (props) => (
                 <ul>
@@ -1367,14 +1428,13 @@ The vanilla way ends up with five controls, one class, one instance, and one lib
                 </div>
               )
 
-        const ShowLink      = (myHook, myText) => <a href="#" className="clickable" onClick={myHook}>{myText}</a>,
+        const ShowLink      = (myHook, myText) => <a href="#" className="show_link" onClick={myHook}>{myText}</a>,
 
               ShowAll       = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ALL'),       'All'       ),
               ShowActive    = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'    ),
               ShowCompleted = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed' ),
 
               Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
-
 
 
         class TodoApp {
@@ -1384,8 +1444,8 @@ The vanilla way ends up with five controls, one class, one instance, and one lib
                 current_state = ()   => { return this.app_state; }
 
                 add_todo      = todo => {
-                  const t = this.app_state.todos;
-                  t.push({completed:false, id:t.length, text:todo});
+                  const as_todos = this.app_state.todos;
+                  as_todos.push({completed:false, id:as_todos.length, text:todo});
                   this.render();
                 }
 
@@ -1437,7 +1497,7 @@ The `Redux` way ends up with
   * a state filter predicate,
   * a state matcher function,
   * three libraries (`React`, `Redux`, and `redux-react`,)
-    * suggests two more (`immutable.js` and `COMEBACK`,)
+    * suggests two more (`immutable.js` and `reselect`,)
   * six sets of bindings,
   * a `store` class instance,
   * creates both `module` and `function instance` scoped state in five places outside the `store`,

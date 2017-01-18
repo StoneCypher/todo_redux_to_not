@@ -8,11 +8,25 @@
     <script charset="utf-8" src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 
     <style type="text/css">
-      li                 { list-style-type: none; height: 1.2em; line-height: 100%; }
-      li:before          { content: '✖️'; display: inline-block; height: 1.2em; width: 1.2em; }
-      li.complete:before { content: '✔'; display: inline-block; }
+
+      ul                 { margin: 1em 0 0 0; padding: 0; }
+
+      li                 { list-style-type: none; height: 1.2em; line-height: 100%; padding: 0.25em 1em;
+      	                   margin: 0 0 1px 0; background-color: #fbfbfb; border: 1px solid #eee; border-radius: 0.5em; }
+
+      li:before          { content: '✗'; color: rgba(0,0,0, 0.3); display: inline-block; width: 1.2em; vertical-align: text-bottom; text-align: center; }
+      li.complete:before { content: '✔'; color: #a00; }
+
+      .show_link         { color: #04b; text-decoration: none; pointer: cursor; background-color: #f0f8ff;
+      	                   border-radius: 0.5em; padding: 0 0.5em; border: 1px solid #def; }
+
+      .show_link.active  { color: white; text-decoration: none; background-color: #004488; border-color: black; }
+
       .todo              { text-decoration: none;         color: black; }
-      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fee; }
+      .todo.complete     { text-decoration: line-through; color: #a00;  background-color: #fdd; border-color: #fbb; }
+
+      li, .show_link     { transition: 0.5s all; }
+
     </style>
 
     <script charset="utf-8" type="text/babel">
@@ -35,10 +49,10 @@
                 return (
                   <div>
                     <input id="add_todo" onKeyUp={event => { if (event.key === 'Enter') { clicker(); }}}/>
-                    <input type="button" onClick={clicker}/>
+                    <input type="button" onClick={clicker} value="Add todo"/>
                   </div>
                 );
-              }
+              };
 
         const Todo = (props) => {
                 const thisTodo = props.todos[props.which],
@@ -48,7 +62,7 @@
                   ( <li onClick={toggler} className={`todo${thisTodo.completed? ' complete':''}`}>{thisTodo.text}</li> )
                   : null
                 );
-              }
+              };
 
         const TodoList = (props) => (
                 <ul>
@@ -62,16 +76,15 @@
                   <TodoList {...props} />
                   <Footer   {...props} />
                 </div>
-              )
+              );
 
-        const ShowLink      = (myHook, myText) => <a href="#" className="clickable" onClick={myHook}>{myText}</a>,
+        const ShowLink      = (myHook, myText) => <a href="#" className="show_link" onClick={myHook}>{myText}</a>,
 
               ShowAll       = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ALL'),       'All'       ),
               ShowActive    = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_ACTIVE'),    'Active'    ),
               ShowCompleted = (props)          => ShowLink( () => props.hooks.set_vfilter('SHOW_COMPLETED'), 'Completed' ),
 
               Footer        = (props)          => <p>Show: {<ShowAll {...props}/>}, {<ShowActive {...props}/>}, {<ShowCompleted {...props}/>}</p>;
-
 
 
         class TodoApp {
@@ -81,8 +94,8 @@
                 current_state = ()   => { return this.app_state; }
 
                 add_todo      = todo => {
-                  const t = this.app_state.todos;
-                  t.push({completed:false, id:t.length, text:todo});
+                  const as_todos = this.app_state.todos;
+                  as_todos.push({completed:false, id:as_todos.length, text:todo});
                   this.render();
                 }
 
