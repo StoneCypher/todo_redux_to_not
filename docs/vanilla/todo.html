@@ -34,7 +34,7 @@
                 }
                 return (
                   <div>
-                    <input id="add_todo"/>
+                    <input id="add_todo" onKeyUp={event => { if (event.key === 'Enter') { clicker(); }}}/>
                     <input type="button" onClick={clicker}/>
                   </div>
                 );
