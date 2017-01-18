@@ -34,7 +34,7 @@ render(
 
 This doesn't need to exist.
 
-```
+```javascript
 /* Look at all the nothing (sound_of_music.jpg) */
 ```
 

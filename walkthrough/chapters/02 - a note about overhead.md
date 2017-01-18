@@ -33,6 +33,8 @@ The `Redux` way ends up with
   * creates both `module` and `function instance` scoped state in five places outside the `store`,
   * modifies the `state` on the way through the controls (becomes a maintenance nightmare,)
 
+<img src="../Cropped Comparison.png" style="height:705px"/>
+
 [Prev - Intro](01 - intro.md)
 
 [Next - Getting Started](03 - getting started.md)

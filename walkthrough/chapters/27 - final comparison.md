@@ -4,6 +4,8 @@ We have now completed the Redux vs Vanilla tutorial.  We will, like the Redux tu
 
 I will switch to listing Vanilla first, for dramatic impact.
 
+<img src="../Cropped Comparison.png" style="height:705px"/>
+
 Just before I do, I'd like to point out that there is overhead at *literally every step* of the `Redux` process.  That means that the delta will actually get worse, as your application grows.  This is not something that starts "paying out as the software gets large;" rather, it gets rapidly worse.
 
 In particular, please review the `combined reducers` section.  This means that each reducer needs to consider every single other reducer while being written.  The contrast is trivial throw-away one-liners on a JS object, like you're already used to.
@@ -20,7 +22,7 @@ Please note that these two apps are both complete, and both do approximately the
 
 ### The Vanilla Way
 
-The vanilla way, including container HTML, clocks in at 114 lines with vertical padding, and including the `React Starter Kit` as a toy build system.  Since the `Redux` version doesn't include these, I'll use 87 as the number instead, since that's just the Javascript part.
+The vanilla way, including container HTML, clocks in at 128 lines with vertical padding, and including the `React Starter Kit` as a toy build system.  Since the `Redux` version doesn't include these, I'll use 87 as the number instead, since that's just the Javascript part.
 
 We can break these up into a bunch of files if we want to, and it'd be smart to run this through a static Babel build, but, this is fine for making an example.
 
@@ -30,7 +32,7 @@ The vanilla way ends up with
   * one instance,
   * and one library (`React`.)
 
-`todo.html` - (128 lines with framing), self-contained
+`todo.html` - 87 lines (128 lines with framing), self-contained
 
 ```html
 <!doctype html>

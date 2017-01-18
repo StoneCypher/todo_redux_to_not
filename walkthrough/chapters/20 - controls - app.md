@@ -33,10 +33,10 @@ Fairly straightforward.  No sign of the data anywhere, at the top level.  This c
 Our top level, data-down approach:
 
 ```javascript
-import React           from 'react';
-import Footer          from 'Footer';
-import AddTodo         from 'AddTodo';
-import VisibleTodoList from 'VisibleTodoList';
+import React    from 'react';
+import Footer   from 'Footer';
+import AddTodo  from 'AddTodo';
+import TodoList from 'TodoList';
 
 const AppRoot = (props) => (
   <div>
