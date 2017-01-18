@@ -59,4 +59,4 @@ Which, incidentally, since it always comes from the outside, nets you `immutabil
 
 [Prev - Controls - Footer](19 - controls - footer.md)
 
-[Next - Mapping State To Props](21 - Mapping State To Props.md)
+[Next - Mapping State To Props](21 - mapping state to props.md)
