@@ -26,6 +26,34 @@ easier.
 
 Let's begin.
 
+## A note about overhead
+
+That 71% drop in size doesn't come from nowhere.
+
+The vanilla way ends up with
+  * five controls,
+  * one class,
+  * one class instance, and
+  * one library (`React`.)
+
+The `Redux` way ends up with
+  * eight internal controls,
+  * one inherited control (`<Provider>`,)
+  * five reducer functions,
+    * a reducer condenser function,
+  * three action creator functions,
+  * two dispatch functions,
+  * two state mapping to props functions,
+  * a state filter predicate,
+  * a state matcher function,
+  * three libraries (`React`, `Redux`, and `redux-react`,)
+    * suggests two more (`immutable.js` and `COMEBACK`,)
+  * six sets of bindings,
+  * a `store` class instance,
+  * creates both `module` and `function instance` scoped state in five places outside the `store`,
+  * modifies the `state` on the way through the controls (becomes a maintenance nightmare,)
+
+
 
 
 <br/><br/><br/>
@@ -1268,6 +1296,10 @@ The vanilla way, including container HTML, clocks in at 114 lines with vertical 
 
 We can break these up into a bunch of files if we want to, and it'd be smart to run this through a static Babel build, but, this is fine for making an example.
 
+The vanilla way ends up with five controls, one class, one instance, and one library (`React`.)
+
+`todo.html` - 114 lines, self-contained
+
 ```html
 <!doctype html>
 <html>
@@ -1392,6 +1424,24 @@ And, the official `Redux` approach clocks in at a whopping 293 lines.  This does
 ***This means that the Vanilla version is only 29% the size***.
 
 This also requires the introduction of a minimum of two new packages from `npm`, and encourages the use of two others.
+
+The `Redux` way ends up with
+  * eight internal controls,
+  * one inherited control (`<Provider>`,)
+  * one class,
+  * five reducer functions,
+    * a reducer condenser function,
+  * three action creator functions,
+  * two dispatch functions,
+  * two state mapping to props functions,
+  * a state filter predicate,
+  * a state matcher function,
+  * three libraries (`React`, `Redux`, and `redux-react`,)
+    * suggests two more (`immutable.js` and `COMEBACK`,)
+  * six sets of bindings,
+  * a `store` class instance,
+  * creates both `module` and `function instance` scoped state in five places outside the `store`,
+  * modifies the `state` on the way through the controls (becomes a maintenance nightmare,)
 
 `index.js` - 15 lines
 
