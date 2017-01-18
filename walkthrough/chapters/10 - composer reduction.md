@@ -11,7 +11,7 @@ starts showing complexity reduction strategies with three simple calls while
 discussing that managing its complexity is a core behavior of downstream apps,
 after referring to its impurity tactics as an advanced topic.
 
-![](./tommy lee jones.jpg)
+![](../tommy lee jones.jpg)
 
 ### The New Simpler Redux Way
 

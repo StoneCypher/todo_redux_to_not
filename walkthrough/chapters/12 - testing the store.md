@@ -55,7 +55,7 @@ App.set_vfilter('SHOW_COMPLETED');
 
 You'll note that the state, in the inspector, looks exactly the same.  Using Chrome as an example, since it varies by browser:
 
-![](./inspector_screen.png)
+![](../inspector_screen.png)
 
 Note that the time machine behavior is not declinable, and if not manually managed, is better known as a "severe memory leak."  😂
 

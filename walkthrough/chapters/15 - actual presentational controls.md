@@ -6,6 +6,6 @@ There are some very strange splittings of responsibilities in this code, some of
 
 We're making an ultra-short chapter to fit the other tutorial's chapter structure.  Sorry about that 😂
 
-[Prev - Designing Controls](14 - designing controls.md)
+[Prev - Designing Controls](14 - designing components.md)
 
 [Next - Controls - Todo](16 - controls - todo.md)
