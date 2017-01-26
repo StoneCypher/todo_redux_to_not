@@ -1308,7 +1308,7 @@ We have now completed the Redux vs Vanilla tutorial.  We will, like the Redux tu
 
 I will switch to listing Vanilla first, for dramatic impact.
 
-<img src="../Cropped Comparison.png" style="height:705px"/>
+<img src="Cropped Comparison.png" style="height:705px"/>
 
 Just before I do, I'd like to point out that there is overhead at *literally every step* of the `Redux` process.  That means that the delta will actually get worse, as your application grows.  This is not something that starts "paying out as the software gets large;" rather, it gets rapidly worse.
 
