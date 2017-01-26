@@ -9,10 +9,13 @@ everyone's favorite, in turn because it in turn advocates discarding a bunch of 
 
 We start by following through the `Redux` step by step example, with vanilla JS implementations in their stead.
 
-In the process, I hope to show that the added overhead of learning Flux and `Redux` concepts is unnecessary, and that all of these
-behaviors have natural implementations in the Javascript that you already know.
+In the process, I hope to show that the added overhead of learning Flux and `Redux` concepts is unnecessary, and that all of these behaviors have natural implementations in the Javascript that you already know.
 
 In essence, this is a `You Might Not Need Redux` site.
+
+In particular, the Vanilla code is ***dramatically*** shorter.
+
+![](walkthrough/Cropped%20Comparison.png)
 
 ## Contents
 
