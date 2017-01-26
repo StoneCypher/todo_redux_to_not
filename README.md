@@ -1,7 +1,7 @@
 # todo_redux_to_not
 Let's remove `Redux` from the `Redux todo` example 😂
 
-Todo: `Redux` to Not
+This is [Todo: `Redux` to Not](https://github.com/StoneCypher/todo_redux_to_not/blob/master/walkthrough/walkthrough_index.md)
 
 ## Why
 My goal is to show how much simpler a vanilla non-flux app can be than a flux app.  I'm using `Redux` as my flux because it's
